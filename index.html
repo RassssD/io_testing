@@ -91,50 +91,58 @@ layout:
 
       objects:
 
-      # Point object at coordinates (6,4)
+      # Equilibrium point
       - Point:
           coordinates: [calcs.N_star,calcs.w]
+          color: black
 
-      # Red point object at coordinates (3,3)
+      # Equilibrium employment on x-axis
       - Point:
           coordinates: [calcs.N_star,0]
-          color: red
+          color: black
           label: 
             text: "N^*"
 
+      # Line down to equilibrium employment
       - Segment:
           a: [calcs.N_star, 0]
           b: [calcs.N_star, calcs.w]
+          lineStyle: dotted
+          color: black
 
+      # Labour Force vertical line
       - Line:
           xIntercept: params.L
-          color: "'#1a1a1a'"
+          color: "'#005cc8'"
           label:
             text: "LF"
             y: 0.85
-          lineStyle: dashed
 
+      # WS Curve
       - Curve:
           fn: "params.WS_intercept + x*params.WS_slope/(params.L - x)" # arbitrary WS curve but right shape
-          color: "'#009E73'"
+          color: "'#eb34c9'"
           label:
+            text: "WS"
+            x: 0.25
+            y: 1
+          max: params.L
 
-            text: "'w^N(H)'"
-
+      # Productivity horizontal line
       - Line:
           slope: 0
           yIntercept: params.lambda
-          color: "'#ff0000'"
+          color: "'#f14b4e'"
           label:
             text: "\\lambda"
             x: 3
           lineStyle: dashed
 
-
+      # PS Curve
       - Line:
           slope: 0
           yIntercept: calcs.w
-          color: "'#ff4000'"
+          color: "'#1e1e1e'"
           label:
             text: "PS"
             x: 0.85
@@ -157,7 +165,7 @@ layout:
           b: [1,1]
           color: "'#1a1a1a'"
       
-      # Unemployed
+      # Beginning-Unemployed segment
       - Segment: 
           a: [0, 0]
           b: [calcs.U_star_share, calcs.U_star_earnings_share]
@@ -167,7 +175,7 @@ layout:
           a: [calcs.U_star_share, calcs.U_star_earnings_share]
           b: [calcs.U_star_share, calcs.U_star_share]
 
-      # Employed
+      # Employed-Owners segment
       - Segment:
           a: [calcs.U_star_share, calcs.U_star_earnings_share]
           b: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
@@ -177,7 +185,7 @@ layout:
           a: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
           b: [calcs.U_E_star_share, calcs.U_E_star_share]
 
-      # Owners
+      # Owners-Final segment
       - Segment: 
           a: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
           b: [1,1]
@@ -200,16 +208,6 @@ layout:
         - {param: WS_intercept, label: WSintercept}
         - {param: WS_slope, label: WS slope}
         - {param: N_firms, label: N firms}
-
-
-
-
-
-
-
-
-
-
 
 
 </div>
