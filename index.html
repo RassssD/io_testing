@@ -11,38 +11,206 @@
 
 <div class="kg-container">
 
+
+params:
+  - name: lambda # productivity
+    value: 10
+    min: 0.5
+    max: 10
+    round: 0.1
+
+  - name: L
+    value: 80
+    min: 25
+    max: 100
+    round: 1
+
+  - name: WS_intercept
+    value: 1
+    min: 0
+    max: 10
+    round: 1
+
+  - name: WS_slope
+    value: 3
+    min: 0.1
+    max: 5
+    round: 0.1
+
+  - name: epsilon
+    value: 4
+    min: 0.5
+    max: 5
+    round: 0.1
+
+  - name: N_firms
+    value: 10
+    min: 1
+    max: 25
+    round: 1
+
+
+calcs:
+  mu: (1/params.epsilon)
+  w: ((params.lambda)*(1 - calcs.mu))
+  n_pop: params.L + params.N_firms
+  L_graph: params.L * 1.1
+
+  # Outcomes
+  N_star: (params.L * (params.WS_intercept - params.lambda * (1 - calcs.mu))) / (params.WS_intercept - params.WS_slope - params.lambda*(1-calcs.mu))
+  U_star: params.L - calcs.N_star
+  U_star_share: calcs.U_star / calcs.n_pop
+  E_star_share: calcs.N_star / calcs.n_pop
+  U_E_star_share: calcs.U_star_share + calcs.E_star_share
+
+  # Gini stuff
+  total_earnings: calcs.N_star * params.lambda + calcs.U_star * params.WS_intercept
+  U_star_earnings_share: (calcs.U_star * params.WS_intercept) / calcs.total_earnings
+  E_star_earnings_share: (calcs.N_star * calcs.w) / calcs.total_earnings
+  U_E_star_earnings_share: calcs.U_star_earnings_share + calcs.E_star_earnings_share
+  B: (0.5*(calcs.U_star_share * calcs.U_star_earnings_share + (calcs.U_E_star_share - calcs.U_star_share)*(calcs.U_E_star_earnings_share + calcs.U_star_earnings_share) + (1 - calcs.U_E_star_share)*(calcs.U_E_star_earnings_share + 1))) # might be a mistake here?
+  A: 0.5 - calcs.B
+  Gini: (1-2*calcs.B)
+
+
 layout:
-  OneGraph:
-    graph:
+  TwoVerticalGraphsPlusSidebar:
+    topGraph:
+
+      xAxis:
+        min: 0
+        max: calcs.L_graph
+        title: Employment, N
+        ticks: 5
+      yAxis:
+        intercept: 0
+        max: 15
+        title: Real wage, w
+        ticks: 3
+
+
       objects:
 
-      # draw a dotted line (lineStyle = dotted)
-      # defined by the points (3,4) and (7,8)
-      - Line:
-          lineStyle: dotted
-          point: [3,4]
-          point2: [7,8]
-          color: blue
+      # Point object at coordinates (6,4)
+      - Point:
+          coordinates: [calcs.N_star,calcs.w]
 
-      # draw a thick line (strokewidth = 4)
-      # defined by the same points,
-      # but limited to the range x = 2 to x = 8
+      # Red point object at coordinates (3,3)
+      - Point:
+          coordinates: [calcs.N_star,0]
+          color: red
+          label: 
+            text: "N^*"
+
+      - Segment:
+          a: [calcs.N_star, 0]
+          b: [calcs.N_star, calcs.w]
+
       - Line:
-          strokeWidth: 4
-          point: [3,4]
-          point2: [7,8]
-          min: 2
-          max: 8
-          color: blue
+          xIntercept: params.L
+          color: "'#1a1a1a'"
           label:
-            text: y = x + 3
-            x: 5
+            text: "LF"
+            y: 0.85
+          lineStyle: dashed
 
-      # show points for reference
-      - Point:
-          coordinates: [3,4]
-      - Point:
-          coordinates: [7,8]
+      - Curve:
+          fn: "params.WS_intercept + x*params.WS_slope/(params.L - x)" # arbitrary WS curve but right shape
+          color: "'#009E73'"
+          label:
+
+            text: "'w^N(H)'"
+
+      - Line:
+          slope: 0
+          yIntercept: params.lambda
+          color: "'#ff0000'"
+          label:
+            text: "\\lambda"
+            x: 3
+          lineStyle: dashed
+
+
+      - Line:
+          slope: 0
+          yIntercept: calcs.w
+          color: "'#ff4000'"
+          label:
+            text: "PS"
+            x: 0.85
+
+    bottomGraph:
+      xAxis:
+        max: 1
+        title: Cumulative population, \%
+        ticks: 4
+      yAxis:
+        max: 1
+        title: Cumulative income, \%
+        ticks: 3
+
+      objects:
+
+      # Perfect Equality line
+      - Segment: 
+          a: [0,0]
+          b: [1,1]
+          color: "'#1a1a1a'"
+      
+      # Unemployed
+      - Segment: 
+          a: [0, 0]
+          b: [calcs.U_star_share, calcs.U_star_earnings_share]
+
+      # U-E separator
+      - Segment:
+          a: [calcs.U_star_share, calcs.U_star_earnings_share]
+          b: [calcs.U_star_share, calcs.U_star_share]
+
+      # Employed
+      - Segment:
+          a: [calcs.U_star_share, calcs.U_star_earnings_share]
+          b: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
+
+      # E-O separator
+      - Segment:
+          a: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
+          b: [calcs.U_E_star_share, calcs.U_E_star_share]
+
+      # Owners
+      - Segment: 
+          a: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
+          b: [1,1]
+          
+
+
+
+    sidebar:
+      controls:
+      - title:  Figure 15.15 The whole economy model and the Lorenz Curve 
+        divs: 
+          - html: "`$$G=${calcs.Gini.toFixed(2)}$$`"
+
+
+      - title:  Policy Instruments
+        sliders:
+        - {param: lambda, label: "\\lambda"}
+        - {param: epsilon, label: "\\varepsilon"}
+        - {param: L, label: Labour Force}
+        - {param: WS_intercept, label: WSintercept}
+        - {param: WS_slope, label: WS slope}
+        - {param: N_firms, label: N firms}
+
+
+
+
+
+
+
+
+
+
+
 
 </div>
 
