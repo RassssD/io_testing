@@ -195,12 +195,7 @@ layout:
 
     sidebar:
       controls:
-      - title:  Figure 15.15 The whole economy model and the Lorenz Curve 
-        divs: 
-          - html: "`$$G=${calcs.Gini.toFixed(2)}$$`"
-
-
-      - title:  Policy Instruments
+      - title:  Parameters
         sliders:
         - {param: lambda, label: "\\lambda"}
         - {param: epsilon, label: "\\varepsilon"}
@@ -208,6 +203,14 @@ layout:
         - {param: WS_intercept, label: WSintercept}
         - {param: WS_slope, label: WS slope}
         - {param: N_firms, label: N firms}
+
+      - title:  Outcomes
+        divs: 
+          - html: "`<p>$$G=${calcs.Gini.toFixed(2)}$$</p>
+                    <p>$$w^*=${calcs.w.toFixed(2)}$$</p>
+                    <p>$$N^*=${calcs.N_star.toFixed(2)}$$</p>
+                    <p>Unemployment Rate: ${(calcs.U_star_share.toFixed(2)*100).toFixed(0)}%</p>`"
+
 
 
 </div>
