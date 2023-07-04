@@ -16,14 +16,33 @@ layout:
     graph:
       objects:
 
-      # Point object at coordinates (6,4)
-      - Point:
-          coordinates: [6,4]
+      # draw a dotted line (lineStyle = dotted)
+      # defined by the points (3,4) and (7,8)
+      - Line:
+          lineStyle: dotted
+          point: [3,4]
+          point2: [7,8]
+          color: blue
 
-      # Red point object at coordinates (3,3)
+      # draw a thick line (strokewidth = 4)
+      # defined by the same points,
+      # but limited to the range x = 2 to x = 8
+      - Line:
+          strokeWidth: 4
+          point: [3,4]
+          point2: [7,8]
+          min: 2
+          max: 8
+          color: blue
+          label:
+            text: y = x + 3
+            x: 5
+
+      # show points for reference
       - Point:
-          coordinates: [3,3]
-          color: red
+          coordinates: [3,4]
+      - Point:
+          coordinates: [7,8]
 
 </div>
 
