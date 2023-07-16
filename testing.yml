@@ -19,7 +19,7 @@ params:
     round: 1
 
   - name: WS_slope
-    value: 3
+    value: 4
     min: 0.1
     max: 5
     round: 0.1
@@ -66,7 +66,7 @@ layout:
 
       xAxis:
         min: 0
-        max: calcs.L_graph
+        max: 110
         title: Employment, N
         ticks: 5
       yAxis:
@@ -77,6 +77,60 @@ layout:
 
 
       objects:
+
+      # BASIC GRAPH OBJECTS
+      # Labour Force vertical line
+      - Line:
+          xIntercept: params.L
+          color: "'#005cc8'"
+          label:
+            text: "LF"
+            y: 0.85
+
+      # MU
+      - Arrow:
+          begin: [100, calcs.w]
+          end: [100, params.lambda]
+          color: red
+          double: True
+          label:
+            text: "\\mu"
+            
+
+
+
+      # CURVES
+      # WS Curve
+      - Curve:
+          fn: "params.WS_intercept + x*params.WS_slope/(params.L - x)" # arbitrary WS curve but right shape
+          color: "'#eb34c9'"
+          label:
+            text: "WS"
+            align: l
+            x: 2
+            y: 10
+          max: params.L
+          
+
+      # Productivity horizontal line
+      - Line:
+          slope: 0
+          yIntercept: params.lambda
+          color: "'#f14b4e'"
+          label:
+            text: "\\lambda"
+            x: 110
+          lineStyle: dashed
+
+      # PS Curve
+      - Line:
+          slope: 0
+          yIntercept: calcs.w
+          color: "'#1e1e1e'"
+          label:
+            text: "PS"
+            x: 110
+            y: calcs.w
 
       # Equilibrium point
       - Point:
@@ -97,42 +151,6 @@ layout:
           lineStyle: dotted
           color: black
 
-      # Labour Force vertical line
-      - Line:
-          xIntercept: params.L
-          color: "'#005cc8'"
-          label:
-            text: "LF"
-            y: 0.85
-
-      # WS Curve
-      - Curve:
-          fn: "params.WS_intercept + x*params.WS_slope/(params.L - x)" # arbitrary WS curve but right shape
-          color: "'#eb34c9'"
-          label:
-            text: "WS"
-            x: 0.25
-            y: 1
-          max: params.L
-
-      # Productivity horizontal line
-      - Line:
-          slope: 0
-          yIntercept: params.lambda
-          color: "'#f14b4e'"
-          label:
-            text: "\\lambda"
-            x: 3
-          lineStyle: dashed
-
-      # PS Curve
-      - Line:
-          slope: 0
-          yIntercept: calcs.w
-          color: "'#1e1e1e'"
-          label:
-            text: "PS"
-            x: 0.85
 
     bottomGraph:
       xAxis:
@@ -152,49 +170,141 @@ layout:
           b: [1,1]
           color: "'#1a1a1a'"
       
-      # Beginning-Unemployed segment
+      # LORENZ CURVE
+      # 1: Beginning-Unemployed segment
       - Segment: 
           a: [0, 0]
           b: [calcs.U_star_share, calcs.U_star_earnings_share]
 
-      # U-E separator
-      - Segment:
-          a: [calcs.U_star_share, calcs.U_star_earnings_share]
-          b: [calcs.U_star_share, calcs.U_star_share]
-
-      # Employed-Owners segment
+      # 2: Employed-Owners segment
       - Segment:
           a: [calcs.U_star_share, calcs.U_star_earnings_share]
           b: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
 
-      # E-O separator
-      - Segment:
-          a: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
-          b: [calcs.U_E_star_share, calcs.U_E_star_share]
-
-      # Owners-Final segment
+      # 3: Owners-Final segment
       - Segment: 
           a: [calcs.U_E_star_share, calcs.U_E_star_earnings_share]
           b: [1,1]
-          
 
+      ## SEPARATORS
+      # U-E separator
+      - Segment:
+          a: [calcs.U_star_share, 0]
+          b: [calcs.U_star_share, calcs.U_star_share]
+          color: black
+
+      # E-O separator
+      - Segment:
+          a: [calcs.U_E_star_share, 0]
+          b: [calcs.U_E_star_share, calcs.U_E_star_share]
+          color: black
+
+      ### AREAS
+      ## BELOW
+      # First segment
+      - Area:
+          fn: x*calcs.U_star_earnings_share / calcs.U_star_share
+          min: 0
+          max: calcs.U_star_share
+          fill: blue
+
+      # Second segment
+      - Area:
+          fn: (calcs.U_star_share*calcs.U_E_star_earnings_share - calcs.U_E_star_earnings_share * calcs.U_star_earnings_share)/(calcs.U_star_share - calcs.U_E_star_share) + x*(calcs.U_star_earnings_share - calcs.U_E_star_earnings_share)/(calcs.U_star_share - calcs.U_E_star_share)
+          min: calcs.U_star_share
+          max: calcs.U_E_star_share
+          fill: red
+
+      # Third segment
+      - Area:
+          fn: (calcs.U_E_star_share - calcs.U_E_star_earnings_share)/(calcs.U_E_star_share - 1) + x*(calcs.U_E_star_earnings_share-1)/(calcs.U_E_star_share-1)
+          min: calcs.U_E_star_share
+          max: 1
+          fill: green
+
+      ## ABOVE
+      # First Segment
+      - Area:
+          fn1: x*calcs.U_star_earnings_share / calcs.U_star_share
+          fn2: (x)
+          min: 0
+          max: calcs.U_star_share
+          fill: red
+
+      # Second segment
+      - Area:
+          fn1: (calcs.U_star_share*calcs.U_E_star_earnings_share - calcs.U_E_star_earnings_share * calcs.U_star_earnings_share)/(calcs.U_star_share - calcs.U_E_star_share) + x*(calcs.U_star_earnings_share - calcs.U_E_star_earnings_share)/(calcs.U_star_share - calcs.U_E_star_share)
+          fn2: (x)
+          min: calcs.U_star_share
+          max: calcs.U_E_star_share
+          fill: green
+
+      # Third segment
+      - Area:
+          fn1: (calcs.U_E_star_share - calcs.U_E_star_earnings_share)/(calcs.U_E_star_share - 1) + x*(calcs.U_E_star_earnings_share-1)/(calcs.U_E_star_share-1)
+          fn2: (x)
+          min: calcs.U_E_star_share
+          max: 1
+          fill: blue
 
 
     sidebar:
       controls:
+      - title:  Wage-setting and Price-setting Curves
+        divs:      
+          - html: "`$$w^{WS} = \\\\alpha + N*\\\\frac{\\\\beta}{L-N}$$`"  
+          - html: "`$$w^{PS} = \\\\lambda*(1-\\\\mu)$$`"  
+       
+
+      
       - title:  Parameters
         sliders:
-        - {param: lambda, label: "\\lambda"}
-        - {param: epsilon, label: "\\varepsilon"}
-        - {param: L, label: Labour Force}
-        - {param: WS_intercept, label: WSintercept}
-        - {param: WS_slope, label: WS slope}
-        - {param: N_firms, label: N firms}
+        - {param: lambda, label: "\\text{Productivity}: \\lambda"}
+        - {param: epsilon, label: "\\text{Elasticity}: \\varepsilon"}
+        - {param: L, label: "\\text{Labour Force}: L"}
+        - {param: WS_intercept, label: "\\text{WS Intercept}: \\alpha"}
+        - {param: WS_slope, label: "\\text{WS Slope}: \\beta"}
+        - {param: N_firms, label: "\\text{Number of firms/owners}: N"}
 
       - title:  Outcomes
         divs: 
           - html: "`<p>$$G=${calcs.Gini.toFixed(2)}$$</p>
                     <p>$$w^*=${calcs.w.toFixed(2)}$$</p>
                     <p>$$N^*=${calcs.N_star.toFixed(2)}$$</p>
-                    <p>Unemployment Rate: ${(calcs.U_star_share.toFixed(2)*100).toFixed(0)}%</p>`"
+                    <p>Unemployment Rate: ${(calcs.U_star_share.toFixed(2)*100).toFixed(0)}%</p>
+                    <p>Unemployed Income and Share: ${params.WS_intercept.toFixed(2)}, ${(calcs.U_star_earnings_share.toFixed(2)*100).toFixed(0)}%</p>
+                    <p>Employed Income and Share: ${calcs.w.toFixed(2)}, ${(calcs.E_star_earnings_share.toFixed(2)*100).toFixed(0)}%</p>
+                    <p>Owner Income and Share: ${(100-calcs.E_star_earnings_share.toFixed(2)*100).toFixed(0)}%</p>`"
+
+          - html: "`<table><thead>
+          <tr>
+            <td></td>
+            <td>Number</td>
+            <td>Population<br/>Share</td>
+            <td>Total<br/>Income</td>
+            <td>Income<br/> Share</td>
+          </tr></thead><tbody>
+          <tr>
+            <td>Unemployed</td>
+            <td>${((calcs.U_star_share)*params.L).toFixed(2)}</td>
+            <td>${(calcs.U_star_share*100).toFixed(2)}%</td>
+            <td>${(params.WS_slope*calcs.U_star_share*params.L).toFixed(2)}</td>
+            <td>${(calcs.U_star_earnings_share*100).toFixed(2)}%</td>
+          </tr>
+          <tr>
+            <td>Employed</td>
+            <td>${((calcs.E_star_share)*params.L).toFixed(2)}</td>
+            <td>${(calcs.E_star_share*100).toFixed(2)}%</td>
+            <td>${(calcs.w*calcs.E_star_share*params.L).toFixed(2)}</td>
+            <td>${(calcs.E_star_earnings_share*100).toFixed(2)}%</td>
+          </tr>
+          <tr>
+            <td>Employers</td>
+            <td>${params.N_firms}</td>
+            <td>${(100*params.N_firms/calcs.n_pop).toFixed(2)}%</td>
+            <td>${(calcs.X *calcs.incshrA).toFixed(1)}</td>
+            <td>${(calcs.incshrA*100).toFixed(3)}\\%</td>
+          </tr>
+        </tbody>
+        </table>`"
 
