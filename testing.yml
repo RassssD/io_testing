@@ -38,19 +38,23 @@ params:
 
 
 calcs:
+  # Endogenous variables
   mu: (1/params.epsilon)
   w: ((params.lambda)*(1 - calcs.mu))
   n_pop: params.L + params.N_firms
-  L_graph: params.L * 1.1
 
-  # Outcomes
+  # graphing purposes
+  L_graph: params.L +5
+  lambda_w_mean: (params.lambda + calcs.w) / 2
+
+  # Employment outcomes
   N_star: (params.L * (params.WS_intercept - params.lambda * (1 - calcs.mu))) / (params.WS_intercept - params.WS_slope - params.lambda*(1-calcs.mu))
   U_star: params.L - calcs.N_star
   U_star_share: calcs.U_star / calcs.n_pop
   E_star_share: calcs.N_star / calcs.n_pop
   U_E_star_share: calcs.U_star_share + calcs.E_star_share
 
-  # Gini stuff
+  # Earnings / Gini outcomes
   total_earnings: calcs.N_star * params.lambda + calcs.U_star * params.WS_intercept
   U_star_earnings_share: (calcs.U_star * params.WS_intercept) / calcs.total_earnings
   E_star_earnings_share: (calcs.N_star * calcs.w) / calcs.total_earnings
@@ -83,9 +87,13 @@ layout:
       - Line:
           xIntercept: params.L
           color: "'#005cc8'"
-          label:
-            text: "LF"
-            y: 0.85
+
+      - Label:
+          coordinates: [calcs.L_graph, 15]
+          text: LF
+          color: blue
+          bgcolor: none
+
 
       # MU
       - Arrow:
@@ -93,10 +101,13 @@ layout:
           end: [100, params.lambda]
           color: red
           double: True
-          label:
-            text: "\\mu"
-            opacity: 0.1
-            
+ 
+      
+      - Label:
+          coordinates: [110, calcs.lambda_w_mean]
+          text: \mu
+          color: red
+          bgcolor: none
 
 
 
@@ -121,6 +132,7 @@ layout:
           label:
             text: "\\lambda"
             x: 110
+            bgcolor: none
           lineStyle: dashed
 
       # PS Curve
@@ -132,6 +144,7 @@ layout:
             text: "PS"
             x: 110
             y: calcs.w
+            bgcolor: none
 
       # Equilibrium point
       - Point:
