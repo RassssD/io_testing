@@ -25,7 +25,7 @@ params:
     round: 0.1
 
   - name: epsilon
-    value: 4
+    value: 2
     min: 0.5
     max: 5
     round: 0.1
@@ -44,8 +44,9 @@ calcs:
   n_pop: params.L + params.N_firms
 
   # graphing purposes
-  L_graph: params.L +5
+  L_graph: params.L + 5
   lambda_w_mean: (params.lambda + calcs.w) / 2
+  WS_text: params.WS_intercept + 1.5
 
   # Employment outcomes
   N_star: (params.L * (params.WS_intercept - params.lambda * (1 - calcs.mu))) / (params.WS_intercept - params.WS_slope - params.lambda*(1-calcs.mu))
@@ -69,7 +70,7 @@ layout:
     topGraph:
 
       xAxis:
-        min: 0
+        min: -5
         max: 110
         title: Employment, N
         ticks: 5
@@ -97,14 +98,14 @@ layout:
 
       # MU
       - Arrow:
-          begin: [100, calcs.w]
-          end: [100, params.lambda]
+          begin: [-2, calcs.w]
+          end: [-2, params.lambda]
           color: red
           double: True
+          strokeWidth: 3
  
-      
       - Label:
-          coordinates: [110, calcs.lambda_w_mean]
+          coordinates: [-5, calcs.lambda_w_mean]
           text: \mu
           color: red
           bgcolor: none
@@ -116,19 +117,23 @@ layout:
       - Curve:
           fn: "params.WS_intercept + x*params.WS_slope/(params.L - x)" # arbitrary WS curve but right shape
           color: "'#eb34c9'"
-          label:
-            text: "WS"
-            align: l
-            x: 2
-            y: 10
+          min: 0
           max: params.L
-          
+
+      - Label:
+          coordinates: [10, calcs.WS_text]
+          text: WS
+          color: "'#eb34c9'"
+          bgcolor: none
+    
 
       # Productivity horizontal line
       - Line:
           slope: 0
           yIntercept: params.lambda
           color: "'#f14b4e'"
+          min: 0
+          max: 105
           label:
             text: "\\lambda"
             x: 110
@@ -140,6 +145,8 @@ layout:
           slope: 0
           yIntercept: calcs.w
           color: "'#1e1e1e'"
+          min: 0
+          max: 105
           label:
             text: "PS"
             x: 110
