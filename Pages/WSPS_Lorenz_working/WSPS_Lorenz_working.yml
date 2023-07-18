@@ -41,7 +41,7 @@ calcs:
   # Endogenous variables
   mu: (1/params.epsilon)
   w: ((params.lambda)*(1 - calcs.mu))
-  n_pop: params.L + params.N_firms
+  total_pop: params.L + params.N_firms
 
   # graphing purposes
   L_graph: params.L + 5
@@ -49,17 +49,27 @@ calcs:
   WS_text: params.WS_intercept + 1.5
 
   # Employment outcomes
-  N_star: (params.L * (params.WS_intercept - params.lambda * (1 - calcs.mu))) / (params.WS_intercept - params.WS_slope - params.lambda*(1-calcs.mu))
-  U_star: params.L - calcs.N_star
-  U_star_share: calcs.U_star / calcs.n_pop
-  E_star_share: calcs.N_star / calcs.n_pop
+  E_star: (params.L * (params.WS_intercept - params.lambda * (1 - calcs.mu))) / (params.WS_intercept - params.WS_slope - params.lambda*(1-calcs.mu))
+  U_star: params.L - calcs.E_star
+  U_star_share: calcs.U_star / calcs.total_pop
+  E_star_share: calcs.E_star / calcs.total_pop
+  O_star_share: params.N_firms / calcs.total_pop
   U_E_star_share: calcs.U_star_share + calcs.E_star_share
 
-  # Earnings / Gini outcomes
-  total_earnings: calcs.N_star * params.lambda + calcs.U_star * params.WS_intercept
-  U_star_earnings_share: (calcs.U_star * params.WS_intercept) / calcs.total_earnings
-  E_star_earnings_share: (calcs.N_star * calcs.w) / calcs.total_earnings
+  # Earnings
+  U_star_earnings: calcs.U_star * params.WS_intercept
+  E_star_earnings: calcs.E_star * calcs.w
+  O_star_earnings: calcs.E_star * calcs.mu
+  total_earnings: calcs.U_star_earnings + calcs.E_star_earnings + calcs.O_star_earnings
+
+  # Earning Shares
+  U_star_earnings_share: calcs.U_star_earnings / calcs.total_earnings
+  E_star_earnings_share: calcs.E_star_earnings / calcs.total_earnings
+  O_star_earnings_share: calcs.O_star_earnings / calcs.total_earnings
   U_E_star_earnings_share: calcs.U_star_earnings_share + calcs.E_star_earnings_share
+
+
+  # Gini calculation
   B: (0.5*(calcs.U_star_share * calcs.U_star_earnings_share + (calcs.U_E_star_share - calcs.U_star_share)*(calcs.U_E_star_earnings_share + calcs.U_star_earnings_share) + (1 - calcs.U_E_star_share)*(calcs.U_E_star_earnings_share + 1))) # might be a mistake here?
   A: 0.5 - calcs.B
   Gini: (1-2*calcs.B)
@@ -155,20 +165,20 @@ layout:
 
       # Equilibrium point
       - Point:
-          coordinates: [calcs.N_star,calcs.w]
+          coordinates: [calcs.E_star,calcs.w]
           color: black
 
       # Equilibrium employment on x-axis
       - Point:
-          coordinates: [calcs.N_star,0]
+          coordinates: [calcs.E_star,0]
           color: black
           label: 
             text: "N^*"
 
       # Line down to equilibrium employment
       - Segment:
-          a: [calcs.N_star, 0]
-          b: [calcs.N_star, calcs.w]
+          a: [calcs.E_star, 0]
+          b: [calcs.E_star, calcs.w]
           lineStyle: dotted
           color: black
 
@@ -279,8 +289,6 @@ layout:
           - html: "`$$w^{WS} = \\\\alpha + N*\\\\frac{\\\\beta}{L-N}$$`"  
           - html: "`$$w^{PS} = \\\\lambda*(1-\\\\mu)$$`"  
        
-
-      
       - title:  Parameters
         sliders:
         - {param: lambda, label: "\\text{Productivity}: \\lambda"}
@@ -288,70 +296,73 @@ layout:
         - {param: L, label: "\\text{Labour Force}: L"}
         - {param: WS_intercept, label: "\\text{WS Intercept}: \\alpha"}
         - {param: WS_slope, label: "\\text{WS Slope}: \\beta"}
-        - {param: N_firms, label: "\\text{Number of firms/owners}: N"}
+        - {param: N_firms, label: "\\text{\\#firms/owners}: F"}
 
       - title:  Outcomes
         divs: 
-          - html: "`<p>$$G=${calcs.Gini.toFixed(2)}$$</p>
-                    <p>$$w^*=${calcs.w.toFixed(2)}$$</p>
-                    <p>$$N^*=${calcs.N_star.toFixed(2)}$$</p>`"
+          - html: "`<p>$$G=${calcs.Gini.toFixed(2)}\\\\:\\\\:\\\\:\\\\:\\\\:w^*=${calcs.w.toFixed(2)}\\\\:\\\\:\\\\:\\\\:\\\\:N^*=${calcs.E_star.toFixed(2)}$$</p>`"
 
-          - html: "`<style>
-  table {
-    border-collapse: collapse;
-    width: 100%;
-  }
+          - html: "`
+                    <style>
+                      table {
+                        border-collapse: collapse;
+                        width: 90%;
+                      }
 
-  th,
-  td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
+                      th,
+                      td {
+                        padding: 8px;
+                        text-align: left;
+                        border-bottom: 1px solid #ddd;
+                      }
 
-  th {
-    background-color: #f2f2f2;
-  }
+                      th {
+                        background-color: #f2f2f2;
+                      }
 
 
-  tr:hover {
-    background-color: #f5f5f5;
-  }
-</style>
+                      tr:hover {
+                        background-color: #f5f5f5;
+                      }
+                    </style>
 
-<table>
-  <thead>
-    <tr>
-      <th></th>
-      <th>Number</th>
-      <th>Population Share</th>
-      <th>Total Income</th>
-      <th>Income Share</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Unemployed</td>
-      <td>${((params.L - calcs.N_star)).toFixed(2)}</td>
-      <td>${(calcs.U_star_share*100).toFixed(2)}%</td>
-      <td>${(params.WS_intercept*calcs.U_star).toFixed(2)}</td>
-      <td>${(calcs.U_star_earnings_share*100).toFixed(2)}%</td>
-    </tr>
-    <tr>
-      <td>Employed</td>
-      <td>${calcs.N_star.toFixed(2)}</td>
-      <td>${(calcs.E_star_share*100).toFixed(2)}%</td>
-      <td>${(calcs.w*calcs.N_star).toFixed(2)}</td>
-      <td>${(calcs.E_star_earnings_share*100).toFixed(2)}%</td>
-    </tr>
-    <tr>
-      <td>Owners</td>
-      <td>${params.N_firms}</td>
-      <td>${(100*params.N_firms/calcs.n_pop).toFixed(2)}%</td>
-      <td>${((params.lambda - calcs.w)*calcs.N_star).toFixed(2)}</td>
-      <td>${((1-calcs.U_E_star_earnings_share)*100).toFixed(2)}%</td>
-    </tr>
-  </tbody>
-</table>
-`"
+                    <table>
+                      <thead>
+                        <tr>
+                          <th></th>
+                          <th>Number</th>
+                          <th>Population Share</th>
+                          <th>Income</th>
+                          <th>Total Income</th>
+                          <th>Income Share</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>Unemployed</td>
+                          <td>${((calcs.U_star)).toFixed(2)}</td>
+                          <td>${(calcs.U_star_share*100).toFixed(2)}%</td>
+                          <td>${(params.WS_intercept).toFixed(2)}</td>
+                          <td>${(params.WS_intercept*calcs.U_star).toFixed(2)}</td>
+                          <td>${(calcs.U_star_earnings_share*100).toFixed(2)}%</td>
+                        </tr>
+                        <tr>
+                          <td>Employed</td>
+                          <td>${calcs.E_star.toFixed(2)}</td>
+                          <td>${(calcs.E_star_share*100).toFixed(2)}%</td>
+                          <td>${(calcs.w).toFixed(2)}</td>
+                          <td>${(calcs.w*calcs.E_star).toFixed(2)}</td>
+                          <td>${(calcs.E_star_earnings_share*100).toFixed(2)}%</td>
+                        </tr>
+                        <tr>
+                          <td>Owners</td>
+                          <td>${params.N_firms}</td>
+                          <td>${(100*params.N_firms/calcs.total_pop).toFixed(2)}%</td>
+                          <td>${(calcs.mu*params.lambda).toFixed(2)}</td>
+                          <td>${((params.lambda - calcs.w)*calcs.E_star).toFixed(2)}</td>
+                          <td>${((1-calcs.U_E_star_earnings_share)*100).toFixed(2)}%</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  `"
 
