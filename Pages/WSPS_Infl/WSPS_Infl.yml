@@ -272,13 +272,13 @@ layout:
     sidebar:
       controls:
        
-      - title:  Parameters
+      - title: Shocks
         sliders:
         - {param: lambda_shock, label: "\\text{Productivity}: \\lambda"}
         - {param: epsilon_shock, label: "\\text{Elasticity}: \\varepsilon"}
         - {param: WS_intercept_shock, label: "\\text{WS Intercept}: \\alpha"}
         - {param: WS_slope_shock, label: "\\text{WS Slope}: \\beta"}
-        - {param: L_shock, label: "\\text{WS Slope}: \\beta"}
+        - {param: L_shock, label: "\\text{Labour Force}: L"}
 
         checkboxes:
         - param: show_inflation
