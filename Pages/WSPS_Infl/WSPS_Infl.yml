@@ -60,7 +60,7 @@ params:
 
 
   - name: show_inflation
-    value: true
+    value: false
 
 
 calcs:
@@ -91,8 +91,12 @@ calcs:
   E_star_0: (params.L_0 * (params.WS_intercept_0 - params.lambda_0 * (1 - calcs.mu_0))) / (params.WS_intercept_0 - params.WS_slope_0 - params.lambda_0*(1-calcs.mu_0))
   E_star: (calcs.L * (calcs.WS_intercept - calcs.lambda * (1 - calcs.mu))) / (calcs.WS_intercept - calcs.WS_slope - calcs.lambda*(1-calcs.mu))
 
-
+  # BG Stuff: BG Is the vertical distance between the NEW PS and WS curves at the OLD equilibrium employment
+  w_demanded_0: params.WS_intercept_0 + calcs.E_star_0*params.WS_slope_0/(params.L_0 - calcs.E_star_0)
+  w_demanded: calcs.WS_intercept + calcs.E_star_0*calcs.WS_slope/(calcs.L - calcs.E_star_0)
   barg_gap: params.WS_intercept_0 + calcs.E_star*params.WS_slope_0/(params.L_0 - calcs.E_star) - calcs.w_0
+  barg_gap_label_y: calcs.barg_gap / 2
+  barg_gap_label_x: calcs.E_star + 15
 
 layout:
   TwoVerticalGraphsPlusSidebar:
@@ -125,51 +129,40 @@ layout:
           bgcolor: none
 
 
-      # MU
-      - Arrow:
-          begin: [-2, calcs.w]
-          end: [-2, calcs.lambda]
-          color: red
-          double: True
-          strokeWidth: 3
- 
-      - Label:
-          coordinates: [-5, calcs.lambda_w_mean]
-          text: \mu
-          color: red
-          bgcolor: none
-
 
 
       # CURVES
-      # WS Curve
+      ## Original WS Curve
+      - Curve:
+          fn: "params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x)" # arbitrary WS curve but right shape
+          color: "'#a8699c'"
+          min: 0
+          max: calcs.L
+          lineStyle: dashed
+    
+      ## Shock WS Curve
       - Curve:
           fn: "calcs.WS_intercept + x*calcs.WS_slope/(calcs.L - x)" # arbitrary WS curve but right shape
           color: "'#eb34c9'"
           min: 0
           max: calcs.L
 
-      - Label:
-          coordinates: [10, calcs.WS_text]
-          text: WS
-          color: "'#eb34c9'"
-          bgcolor: none
-    
 
-      # Productivity horizontal line
+      # Original PS Curve
       - Line:
           slope: 0
-          yIntercept: calcs.lambda
-          color: "'#f14b4e'"
+          yIntercept: calcs.w_0
+          color: "'#1e1e1e'"
           min: 0
           max: 105
           label:
-            text: "\\lambda"
+            text: "PS"
             x: 110
+            y: calcs.w
             bgcolor: none
           lineStyle: dashed
 
-      # PS Curve
+      # Shock PS Curve
       - Line:
           slope: 0
           yIntercept: calcs.w
@@ -182,10 +175,12 @@ layout:
             y: calcs.w
             bgcolor: none
 
-      # Equilibrium point
+      # Original equilibrium point
       - Point:
-          coordinates: [calcs.E_star,calcs.w]
+          coordinates: [calcs.E_star_0,calcs.w_0]
           color: black
+          label:
+            text: "A^*"
 
       # Equilibrium employment on x-axis
       - Point:
@@ -200,6 +195,35 @@ layout:
           b: [calcs.E_star, calcs.w]
           lineStyle: dotted
           color: black
+
+
+      # PS Bargaining gap
+      - Arrow:
+          begin: [calcs.E_star_0, calcs.w_0]
+          end: [calcs.E_star_0, calcs.w]
+          double: True
+          strokewidth: 1
+          color: red
+          show: false
+
+      # WS Bargaining gap
+      - Arrow:
+          begin: [calcs.E_star_0, calcs.w_demanded_0]
+          end: [calcs.E_star_0, calcs.w_demanded]
+          double: True
+          strokewidth: 1
+          color: blue
+          show: false
+
+      # Total Bargaining gap
+      - Arrow:
+          begin: [calcs.E_star_0, calcs.w]
+          end: [calcs.E_star_0, calcs.w_demanded]
+          double: True
+          strokewidth: 1
+          color: red
+          show: params.show_inflation
+
 
 
     bottomGraph:
@@ -244,15 +268,7 @@ layout:
           max: calcs.L
           show: params.show_inflation
 
-    
 
-
-      # Equilibrium employment on x-axis
-      - Point:
-          coordinates: [calcs.E_star_0,0]
-          color: black
-          label: 
-            text: "N^*"
 
       
       # Bargaining gap
@@ -264,7 +280,12 @@ layout:
           color: red
           show: params.show_inflation
 
-
+      - Label:
+          coordinates: [calcs.barg_gap_label_x, calcs.barg_gap_label_y]
+          text: "`BG=${calcs.barg_gap.toFixed(2)}\\\\%`"
+          color: red
+          bgcolor: none
+          show: params.show_inflation
 
 
 
@@ -287,9 +308,7 @@ layout:
       - title:  Outcomes
         divs: 
           - html: "`<p>$$
-          w^*=${calcs.w.toFixed(2)}\\\\:\\\\:\\\\:\\\\:\\\\:
-          BG=${calcs.barg_gap.toFixed(2)}\\\\:\\\\:\\\\:\\\\:\\\\:
-          N^*=${calcs.E_star.toFixed(2)}
+          BG=${calcs.barg_gap.toFixed(2)}\\\\%\\\\:\\\\:\\\\:\\\\:\\\\:
           $$</p>`"
 
 
