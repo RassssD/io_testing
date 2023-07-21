@@ -1,0 +1,295 @@
+
+params:
+  - name: lambda_0
+    value: 10
+
+  - name: lambda_shock # productivity
+    value: 0
+    min: -3
+    max: 5
+    round: 0.5
+
+  - name: L_0
+    value: 100
+
+  - name: L_shock
+    value: 0
+    min: -20
+    max: 20
+    round: 1
+
+
+  - name: WS_intercept_0
+    value: 3
+
+  - name: WS_intercept_shock
+    value: 0
+    min: -3
+    max: 2
+    round: 0.1
+
+
+  - name: WS_slope_0
+    value: 5
+
+  - name: WS_slope_shock
+    value: 0
+    min: -3
+    max: 2
+    round: 0.1
+
+
+  - name: epsilon_0
+    value: 2
+
+  - name: epsilon_shock
+    value: 0
+    min: -0.5
+    max: 5
+    round: 0.1
+
+
+  - name: N_firms_0
+    value: 10
+
+  - name: N_firms_shock
+    value: 0
+    min: -10
+    max: 10
+    round: 1
+
+
+  - name: show_inflation
+    value: true
+
+
+calcs:
+
+  # calculate shock values
+  lambda: params.lambda_0 + params.lambda_shock
+  L: params.L_0 + params.L_shock
+  WS_intercept: params.WS_intercept_0 + params.WS_intercept_shock
+  WS_slope: params.WS_slope_0 + params.WS_slope_shock
+  epsilon: params.epsilon_0 + params.epsilon_shock
+  N_firms: params.N_firms_0 + params.N_firms_shock
+
+
+
+  # Endogenous variables
+  mu_0: (1/params.epsilon_0)
+  mu: (1/calcs.epsilon)
+  w_0: ((params.lambda_0)*(1 - calcs.mu_0))
+  w: ((calcs.lambda)*(1 - calcs.mu))
+  total_pop: calcs.L + calcs.N_firms
+
+  # graphing purposes
+  L_graph: calcs.L + 5
+  lambda_w_mean: (calcs.lambda + calcs.w) / 2
+  WS_text: calcs.WS_intercept + 1.5
+
+  # Employment outcomes
+  E_star_0: (params.L_0 * (params.WS_intercept_0 - params.lambda_0 * (1 - calcs.mu_0))) / (params.WS_intercept_0 - params.WS_slope_0 - params.lambda_0*(1-calcs.mu_0))
+  E_star: (calcs.L * (calcs.WS_intercept - calcs.lambda * (1 - calcs.mu))) / (calcs.WS_intercept - calcs.WS_slope - calcs.lambda*(1-calcs.mu))
+
+
+  barg_gap: params.WS_intercept_0 + calcs.E_star*params.WS_slope_0/(params.L_0 - calcs.E_star) - calcs.w_0
+
+layout:
+  TwoVerticalGraphsPlusSidebar:
+    topGraph:
+
+      xAxis:
+        min: -5
+        max: 110
+        title: Employment, N
+        ticks: 5
+      yAxis:
+        intercept: 0
+        max: 15
+        title: Real wage, w
+        ticks: 3
+
+
+      objects:
+
+      # BASIC GRAPH OBJECTS
+      # Labour Force vertical line
+      - Line:
+          xIntercept: calcs.L
+          color: "'#005cc8'"
+
+      - Label:
+          coordinates: [calcs.L_graph, 15]
+          text: LF
+          color: blue
+          bgcolor: none
+
+
+      # MU
+      - Arrow:
+          begin: [-2, calcs.w]
+          end: [-2, calcs.lambda]
+          color: red
+          double: True
+          strokeWidth: 3
+ 
+      - Label:
+          coordinates: [-5, calcs.lambda_w_mean]
+          text: \mu
+          color: red
+          bgcolor: none
+
+
+
+      # CURVES
+      # WS Curve
+      - Curve:
+          fn: "calcs.WS_intercept + x*calcs.WS_slope/(calcs.L - x)" # arbitrary WS curve but right shape
+          color: "'#eb34c9'"
+          min: 0
+          max: calcs.L
+
+      - Label:
+          coordinates: [10, calcs.WS_text]
+          text: WS
+          color: "'#eb34c9'"
+          bgcolor: none
+    
+
+      # Productivity horizontal line
+      - Line:
+          slope: 0
+          yIntercept: calcs.lambda
+          color: "'#f14b4e'"
+          min: 0
+          max: 105
+          label:
+            text: "\\lambda"
+            x: 110
+            bgcolor: none
+          lineStyle: dashed
+
+      # PS Curve
+      - Line:
+          slope: 0
+          yIntercept: calcs.w
+          color: "'#1e1e1e'"
+          min: 0
+          max: 105
+          label:
+            text: "PS"
+            x: 110
+            y: calcs.w
+            bgcolor: none
+
+      # Equilibrium point
+      - Point:
+          coordinates: [calcs.E_star,calcs.w]
+          color: black
+
+      # Equilibrium employment on x-axis
+      - Point:
+          coordinates: [calcs.E_star,0]
+          color: black
+          label: 
+            text: "N^*"
+
+      # Line down to equilibrium employment
+      - Segment:
+          a: [calcs.E_star, 0]
+          b: [calcs.E_star, calcs.w]
+          lineStyle: dotted
+          color: black
+
+
+    bottomGraph:
+      xAxis:
+        min: -5
+        max: 110
+        title: Employment, N
+        ticks: 5
+      yAxis:
+        intercept: 0
+        min: -5
+        max: 5
+        title: Inflation, $\pi\; (\%)$
+        ticks: 3
+
+
+      objects:
+
+
+
+      # CURVES
+      # Eq Phillips Curve
+      - Curve:
+          fn: "params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x) - calcs.w_0" # arbitrary WS curve but right shape
+          color: "'#a8699c'"
+          min: 0
+          max: calcs.L
+
+      # Unstable Phillips Curve 1
+      - Curve:
+          fn: "params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x) - calcs.w_0 + calcs.barg_gap"
+          color: "'#eb34c9'"
+          min: 0
+          max: calcs.L
+          show: params.show_inflation
+
+      # Unstable Phillips Curve 2
+      - Curve:
+          fn: "params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x) - calcs.w_0 + calcs.barg_gap * 2"
+          color: "'#ff38a4'"
+          min: 0
+          max: calcs.L
+          show: params.show_inflation
+
+    
+
+
+      # Equilibrium employment on x-axis
+      - Point:
+          coordinates: [calcs.E_star_0,0]
+          color: black
+          label: 
+            text: "N^*"
+
+      
+      # Bargaining gap
+      - Arrow:
+          begin: [calcs.E_star, 0]
+          end: [calcs.E_star, calcs.barg_gap]
+          double: True
+          strokewidth: 1
+          color: red
+          show: params.show_inflation
+
+
+
+
+
+
+    sidebar:
+      controls:
+       
+      - title:  Parameters
+        sliders:
+        - {param: lambda_shock, label: "\\text{Productivity}: \\lambda"}
+        - {param: epsilon_shock, label: "\\text{Elasticity}: \\varepsilon"}
+        - {param: WS_intercept_shock, label: "\\text{WS Intercept}: \\alpha"}
+        - {param: WS_slope_shock, label: "\\text{WS Slope}: \\beta"}
+        - {param: L_shock, label: "\\text{WS Slope}: \\beta"}
+
+        checkboxes:
+        - param: show_inflation
+          label: "\\text{Show BG and PC}"
+
+      - title:  Outcomes
+        divs: 
+          - html: "`<p>$$
+          w^*=${calcs.w.toFixed(2)}\\\\:\\\\:\\\\:\\\\:\\\\:
+          BG=${calcs.barg_gap.toFixed(2)}\\\\:\\\\:\\\\:\\\\:\\\\:
+          N^*=${calcs.E_star.toFixed(2)}
+          $$</p>`"
+
+
