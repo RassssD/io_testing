@@ -1,0 +1,487 @@
+
+params:
+
+  # AD Parameters
+  - name: AD_0
+    value: 5
+
+  - name: AD_shock
+    value: 5
+    min: 2
+    max: 8
+    round: 0.5
+
+  ## WSPS Parameters
+  # WS Parameters
+  - name: WS_intercept_0
+    value: 0.5
+
+  - name: WS_intercept_shock
+    value: 0
+    min: -0.5
+    max: 2
+    round: 0.1
+
+  - name: WS_slope_0
+    value: 3
+
+  - name: WS_slope_shock
+    value: 0
+    min: -0.9
+    max: 0.9
+    round: 0.1
+
+  # PS Parameters
+  - name: lambda_0
+    value: 10
+
+  - name: lambda_shock # productivity
+    value: 0
+    min: -3
+    max: 5
+    round: 0.5
+
+  - name: epsilon_0
+    value: 2
+
+  - name: epsilon_shock
+    value: 0
+    min: -0.5
+    max: 5
+    round: 0.1
+
+  ## Others
+  - name: L_0
+    value: 10
+
+#  - name: L_shock
+#    value: 0
+#    min: -5
+#    max: 5
+#    round: 1
+
+  - name: show_inflation
+    value: true
+  - name: show_short_run
+    value: true
+  - name: show_long_run
+    value: true
+
+calcs:
+
+  # calculate shock values
+  lambda: params.lambda_0 + params.lambda_shock
+  L: params.L_0 #+ params.L_shock
+  WS_intercept: params.WS_intercept_0 + params.WS_intercept_shock
+  WS_slope: params.WS_slope_0 + params.WS_slope_shock
+  epsilon: params.epsilon_0 + params.epsilon_shock
+  #AD: params.AD_0 + params.AD_shock
+
+  E_shock: params.AD_shock * 6/5
+
+  # Endogenous variables
+  mu_0: (1/params.epsilon_0)
+  mu: (1/calcs.epsilon)
+  w_0: ((params.lambda_0)*(1 - calcs.mu_0))
+  w: ((calcs.lambda)*(1 - calcs.mu))
+
+  # graphing purposes
+  L_graph: calcs.L + 5
+  lambda_w_mean: (calcs.lambda + calcs.w) / 2
+  WS_text: calcs.WS_intercept + 1.5
+
+  # Employment outcomes
+  # Old eq
+  E_star_0: (params.L_0 * (params.WS_intercept_0 - params.lambda_0 * (1 - calcs.mu_0))) / (params.WS_intercept_0 - params.WS_slope_0 - params.lambda_0*(1-calcs.mu_0))
+  # New eq
+  E_star: (calcs.L * (calcs.WS_intercept - calcs.lambda * (1 - calcs.mu))) / (calcs.WS_intercept - calcs.WS_slope - calcs.lambda*(1-calcs.mu))
+  # Short run employment (with AD)
+  E_star_SR: calcs.E_star + calcs.E_shock - calcs.E_star_0
+
+
+  # BG Stuff: BG Is the vertical distance between the NEW PS and WS curves at the OLD equilibrium employment
+  w_demanded_0: params.WS_intercept_0 + calcs.E_star_0*params.WS_slope_0/(params.L_0 - calcs.E_star_0)
+  w_demanded: calcs.WS_intercept + calcs.E_star_SR*calcs.WS_slope/(calcs.L - calcs.E_star_SR)
+  barg_gap: (params.WS_intercept_0 + calcs.E_star_SR*params.WS_slope_0/(params.L_0 - calcs.E_star_SR) - calcs.w_0) / calcs.w_0
+  barg_gap_label_y: calcs.barg_gap / 2
+  barg_gap_label_x: calcs.E_star + 15
+
+  # For the table: expected and realised inflation in each period
+  realised_inflation_0: calcs.barg_gap
+  
+  exp_inflation_1: calcs.realised_inflation_0
+  realised_inflation_1: calcs.exp_inflation_1 + calcs.barg_gap
+
+  exp_inflation_2: calcs.realised_inflation_1
+  realised_inflation_2: calcs.exp_inflation_2 + calcs.barg_gap
+
+
+layout:
+  ThreeHorizontalGraphs:
+
+    ### AD Diagram
+    leftGraph:
+      xAxis:
+        min: 0
+        max: 11
+        title: Employment, N
+        ticks: 5
+      yAxis:
+        intercept: 0
+        max: 10
+        title: Real wage, w
+        ticks: 5
+
+
+
+      objects:
+      ## AD Lines
+      # Equilibrium line
+      - Line:
+          yIntercept: 0
+          slope: 1
+          color: black
+
+      - AngleMarker:
+          measure: 45
+
+      # Normal line
+      - Line:
+          yIntercept: params.AD_0
+          slope: 1/6
+          lineStyle: dashed 
+
+      # Shock line
+      - Line:
+          yIntercept: params.AD_shock
+          slope: 1/6
+
+      ## Short and long-run equilibria
+      # Old eq point
+      - Point:
+          coordinates: [calcs.E_star_0,calcs.E_star_0]
+          color: black
+          label: 
+            text: "A^*"
+
+      # Equilibrium line down
+      - Segment:
+          a: [calcs.E_star_0, 0]
+          b: [calcs.E_star_0, calcs.E_star_0]
+          lineStyle: dotted
+          color: black
+
+
+      # Short run eq point
+      - Point:
+          coordinates: [calcs.E_shock,calcs.E_shock]
+          color: black
+          label: 
+            text: "B^*"
+          show: params.show_short_run
+
+      # Short run eq dropline
+      - Segment:
+          a: [calcs.E_shock, 0]
+          b: [calcs.E_shock, calcs.E_shock]
+          lineStyle: dotted
+          color: black
+          show: params.show_short_run
+
+
+      # New eq point (from WSPS)
+      - Point:
+          coordinates: [calcs.E_star,calcs.E_star]
+          color: black
+          label: 
+            text: "C^*"
+          show: params.show_long_run
+
+      # New eq dropline
+      - Segment:
+          a: [calcs.E_star, 0]
+          b: [calcs.E_star, calcs.E_star]
+          lineStyle: dotted
+          color: black
+          show: params.show_long_run
+
+    leftControls:
+      title: AD Shocks
+      sliders:
+      - {param: AD_shock, label: "\\text{Level of AD}: C_0"}
+      checkboxes:
+      - param: show_short_run
+        label: "\\text{Show short-run eq}"
+
+
+    ### WSPS Diagram
+    rightGraph:
+
+      xAxis:
+        min: 0
+        max: 11
+        title: Employment, N
+        ticks: 5
+      yAxis:
+        intercept: 0
+        max: 10
+        title: Real wage, w
+        ticks: 3
+
+
+      objects:
+      ## BASIC GRAPH OBJECTS
+      # Labour Force vertical line
+      - Line:
+          xIntercept: calcs.L
+          color: "'#005cc8'"
+
+      - Label:
+          coordinates: [calcs.L_graph, 15]
+          text: LF
+          color: blue
+          bgcolor: none
+
+      ## CURVES
+      # Original WS Curve
+      - Curve:
+          fn: "params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x)" # arbitrary WS curve but right shape
+          color: "'#a8699c'"
+          min: 0
+          max: calcs.L
+          lineStyle: dashed
+    
+      # Shock WS Curve
+      - Curve:
+          fn: "calcs.WS_intercept + x*calcs.WS_slope/(calcs.L - x)" # arbitrary WS curve but right shape
+          color: "'#eb34c9'"
+          min: 0
+          max: calcs.L
+
+
+      # Original PS Curve
+      - Line:
+          slope: 0
+          yIntercept: calcs.w_0
+          color: "'#1e1e1e'"
+          min: 0
+          max: 105
+          label:
+            text: "PS"
+            x: 110
+            y: calcs.w
+            bgcolor: none
+          lineStyle: dashed
+
+      # Shock PS Curve
+      - Line:
+          slope: 0
+          yIntercept: calcs.w
+          color: "'#1e1e1e'"
+          min: 0
+          max: 105
+          label:
+            text: "PS"
+            x: 110
+            y: calcs.w
+            bgcolor: none
+
+
+
+      ## Short and Long-run Equilibria
+      # Original equilibrium point
+      - Point:
+          coordinates: [calcs.E_star_0,calcs.w_0]
+          color: black
+          label:
+            text: "A^*"
+
+      # Old eq dropline
+      - Segment:
+          a: [calcs.E_star_0, 0]
+          b: [calcs.E_star_0, calcs.w_0]
+          lineStyle: dotted
+          color: black
+
+
+      # New equilibrium point
+      - Point:
+          coordinates: [calcs.E_star,calcs.w]
+          color: black
+          label: 
+            text: "C^*"
+          show: params.show_long_run
+
+      # New eq dropline
+      - Segment:
+          a: [calcs.E_star, 0]
+          b: [calcs.E_star, calcs.w]
+          lineStyle: dotted
+          color: black
+          show: params.show_long_run
+
+
+      # Short run AD equilibrium
+      - Point:
+          coordinates: [calcs.E_star_SR,calcs.w]
+          color: black
+          label: 
+            text: "B^*"
+          show: params.show_short_run
+
+      # Short run eq dropline
+      - Segment:
+          a: [calcs.E_star_SR, 0]
+          b: [calcs.E_star_SR, calcs.w]
+          lineStyle: dotted
+          color: black
+          show: params.show_short_run
+
+      # Bargaining gap
+      - Segment:
+          a: [calcs.E_star_SR, calcs.w]
+          b: [calcs.E_star_SR, calcs.w_demanded]
+          strokeWidth: 3
+          color: red
+          show: params.show_inflation
+
+
+
+    rightControls:
+      title: WSPS Shocks
+      sliders:
+      - {param: lambda_shock, label: "\\text{Productivity}: \\lambda"}
+      - {param: epsilon_shock, label: "\\text{Elasticity}: \\varepsilon"}
+      - {param: WS_intercept_shock, label: "\\text{WS Intercept}: \\alpha"}
+      - {param: WS_slope_shock, label: "\\text{WS Slope}: \\beta"}
+      checkboxes:
+      - param: show_long_run
+        label: "\\text{Show long-run eq}"
+
+
+
+
+    middleGraph:
+      xAxis:
+        min: 0
+        max: 11
+        title: Employment, N
+        ticks: 5
+      yAxis:
+        intercept: 0
+        min: -1
+        max: 1
+        title: Inflation, $\pi\; (\%)$
+        ticks: 3
+
+
+      objects:
+
+
+
+      # CURVES
+      # Eq Phillips Curve
+      - Curve:
+          fn: "(params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x) - calcs.w_0) / calcs.w_0" # arbitrary WS curve but right shape
+          color: "'#a8699c'"
+          min: 0
+          max: calcs.L
+
+      # Unstable Phillips Curve 1
+      - Curve:
+          fn: "(params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x) - calcs.w_0) / calcs.w_0 + calcs.barg_gap"
+          color: "'#eb34c9'"
+          min: 0
+          max: calcs.L
+          show: params.show_inflation
+
+      # Unstable Phillips Curve 2
+      - Curve:
+          fn: "(params.WS_intercept_0 + x*params.WS_slope_0/(params.L_0 - x) - calcs.w_0) / calcs.w_0 + calcs.barg_gap * 2"
+          color: "'#ff38a4'"
+          min: 0
+          max: calcs.L
+          show: params.show_inflation
+
+
+
+      
+      # Bargaining gap
+      - Segment:
+          a: [calcs.E_star_SR, 0]
+          b: [calcs.E_star_SR, calcs.barg_gap]
+          strokeWidth: 3
+          color: red
+          show: params.show_inflation
+
+      - Label:
+          coordinates: [calcs.barg_gap_label_x, calcs.barg_gap_label_y]
+          text: "`BG=${calcs.barg_gap.toFixed(2)}\\\\%`"
+          color: red
+          bgcolor: none
+          show: params.show_inflation
+
+    middleControls:
+      title: Inflation Outcome
+      checkboxes:
+      - param: show_inflation
+        label: "\\text{Show BG and PC}"
+
+      divs: 
+        - html: "`<p>$$
+        \\\\text{Bargaining Gap}=${(calcs.barg_gap*100).toFixed(2)}\\\\%\\\\:\\\\:\\\\:\\\\:\\\\:
+        $$</p>`"
+
+
+
+        - html: "`
+<style>
+  table {
+    border-collapse: collapse;
+    width: 20%;
+  }
+
+  th,
+  td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    background-color: #f2f2f2;
+  }
+
+
+  tr:hover {
+    background-color: #f5f5f5;
+  }
+</style>
+
+<table>
+  <thead>
+    <tr>
+      <th>Period</th>
+      <th>Expected Inflation</th>
+      <th>Realised Inflation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>0.00%</td>
+      <td>${(calcs.realised_inflation_0*100).toFixed(2)}%</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>${(calcs.exp_inflation_1*100).toFixed(2)}%</td>
+      <td>${(calcs.realised_inflation_1*100).toFixed(2)}%</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>${(calcs.exp_inflation_2*100).toFixed(2)}%</td>
+      <td>${(calcs.realised_inflation_2*100).toFixed(2)}%</td>
+    </tr>
+  </tbody>
+</table>
+`"
