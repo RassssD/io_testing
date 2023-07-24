@@ -155,6 +155,8 @@ layout:
       - Line:
           yIntercept: params.AD_shock
           slope: 1/6
+          drag:
+            - vertical: AD_shock
 
       ## Short and long-run equilibria
       # Old eq point
