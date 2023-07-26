@@ -225,7 +225,7 @@ layout:
     leftControls:
       title: AD Shocks
       sliders:
-      - {param: AD_shock, label: "\\text{Level of AD}: C_0"}
+      - {param: AD_shock, label: "\\text{AD Shock}: C_0"}
       checkboxes:
       - param: show_short_run
         label: "\\text{Show short-run eq}"
@@ -473,7 +473,7 @@ layout:
 <style>
   table {
     border-collapse: collapse;
-    width: 20%;
+    width: 50%;
   }
 
   th,
