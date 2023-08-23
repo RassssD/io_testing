@@ -1,23 +1,106 @@
 <!DOCTYPE html>
-<html class="no-js" lang=""><head>
+<html class="no-js" lang="">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+<head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>WSPS-Lorenz Current</title>
     <link href="https://kineticgraphs.org/css/kg.0.2.6.css" rel="stylesheet">
     <script src="https://kineticgraphs.org/js/kg.0.2.6.js"></script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [['$', '$'], ['\\(', '\\)']],
+          displayMath: [['$$', '$$'], ['\\[', '\\]']],
+          processEscapes: true
+        }
+      });
+    </script>
+
+<style>
+  .tg{width:80%};
+</style>
+
+
 </head>
-<body class="vsc-initialized">
+  <body class="vsc-initialized">
 
-<A HREF="../../index.html">Home page</A>
-
-
- <!--  <h2>Figure 15.15:--> <h2>Test: The AD-WSPS-PC Diagram in short and long run equilibrium</h2>  
-
-<div class="kg-container" src="./AD_WSPS_PC_WIP.yml" style="width: 110%">
+    <A HREF="../../index.html">Home page</A>
 
 
+    <h2>Test: The AD-WSPS-PC Diagram in short and long run equilibrium</h2>  
+    <table class="tg">
+      <thead>
+        <tr>
+          <th>Side of the labour market</th>
+          <th>Variable</th>
+          <th>Meaning</th>
+          <th>Default Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="4">Wage Setting: $w^{WS}=b+\cfrac{a}{\tau(L-N)}$</td>
+          <td>$a$</td>
+          <td>Disutility of work<br></td>
+          <td>0.1<br></td>
+        </tr>
+        <tr>
+          <td>$b$</td>
+          <td>Unemployment Benefits<br></td>
+          <td>0.1<br></td>
+        </tr>
+        <tr>
+          <td>$\tau$</td>
+          <td>Probability of being fired when shirking<br></td>
+          <td>0.5<br></td>
+        </tr>
+        <tr>
+          <td>$L-N$</td>
+          <td>Unemployment Rate, determines unemployment duration<br></td>
+          <td>0.5 (equilibrium)<br></td>
+        </tr>
+        <tr>
+          <td rowspan="4">Price Setting: $w^{PS}=q(1-\mu-umc)$</td>
+          <td>$q$</td>
+          <td>Output per worker (productivity)<br></td>
+          <td>2<br></td>
+        </tr>
+        <tr>
+          <td>$umc$</td>
+          <td>Unit Material Cost of imported inputs<br></td>
+          <td>0.15<br></td>
+        </tr>
+        <tr>
+          <td>$\mu=1/\varepsilon$</td>
+          <td>Firm markup over MC, determined by competition<br></td>
+          <td>0.6<br></td>
+        </tr>
+        <tr>
+          <td>$\varepsilon$</td>
+          <td>Demand elasticity (competition)<br></td>
+          <td>1.67<br></td>
+        </tr>
+      </tbody>
+      </table>
+    <hr>
+    
+    <h4> Mechanism </h4>
+      <ol>
+        <li><b>Shocks</b> to aggregate demand (demand-side) or the labour market (supply-side) are <b>permanent</b> and <b>occur in the initial period 0</b>.</li>
+        <li>If the <b>short-run AD</b> does not provide employment consistent with the <b>long-run labour market equilibrium</b>, a <b>bargaining gap</b> appears: \(\bf{\text{BG}=\cfrac{w^{WS} - w^{PS}}{w^{PS}}}\).</li>
+        <li><b>Each period</b>, the bargaining gap is added to that period's <b>realised</b> inflation, and next period's <b>expected</b> inflation.</li>
+      </ol>
+      <p><b>3 periods</b> are shown here, each with its own Phillips Curve ($PC_0$, $PC_1$, $PC_2$).</p>
 
 
-</div>
 
 
-</body></html>
+
+
+    <hr>
+
+    <div class="kg-container" src="./AD_WSPS_PC_WIP.yml" style="width: 110%"></div>
+
+  </body>
+
+</html>

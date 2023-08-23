@@ -32,8 +32,8 @@ params:
 
   - name: WS_b_shock
     value: 0
-    min: -0.2
-    max: 0.2
+    min: -0.1
+    max: 0.1
     round: 0.01
 
   # Prob of firing given shirking, tau
@@ -89,7 +89,7 @@ params:
   - name: show_barg_gap
     value: false
   - name: show_PC
-    value: false
+    value: true
 
 
   - name: show_short_run
@@ -246,6 +246,7 @@ layout:
           color: black
           label: 
             text: "B"
+          r: 5
           show: params.show_short_run
           position: br
 
@@ -265,6 +266,7 @@ layout:
           label: 
             text: "C"
             bgcolor: white
+          r: 5
           show: params.show_long_run
           position: br
 
@@ -283,6 +285,7 @@ layout:
           label: 
             text: "A"
             bgcolor: white
+          r: 5
           position: br
 
       # Equilibrium line down
@@ -308,22 +311,14 @@ layout:
           color: "'#ff7f0e'"
           bgcolor: white
 
-
-
     leftControls:
-      title: SHOCKS
+      title: Aggregate Demand, demand-side
       sliders:
       - {param: AD_shock, label: "\\text{AD}: C_0"}
-      
-      - {param: q_shock, label: "\\text{Labour Prod}: q"}
-      - {param: umc_shock, label: "\\text{Unit material cost}"}
-      - {param: epsilon_shock, label: "\\text{Elasticity}: \\varepsilon"}
 
-      - {param: WS_a_shock, label: "\\text{Work disutility}: a"}
-      - {param: WS_b_shock, label: "\\text{U Benefits}: b"}
-      - {param: WS_tau_shock, label: "\\text{P(fired|shirk)}: \\tau"}
-
-
+      checkboxes:
+      - param: show_short_run
+        label: "\\text{Show demand-side (short-run) equilibrium}"
 
     ### WSPS Diagram
     middleGraph:
@@ -485,28 +480,29 @@ layout:
 
 
     middleControls:
-      title: Display shock effects
+      title: Wage and Price Setting, supply-side
 
       checkboxes:
-      - param: show_short_run
-        label: "\\text{Show demand-side (short-run) equilibrium}"
-      - param: show_barg_gap
-        label: "\\text{Show Bargaining Gap}"
-      - param: show_PC
-        label: "\\text{Show Phillips Curves}"
       - param: show_long_run
         label: "\\text{Show supply-side (long-run) equilibrium}"
 
-      divs:      
-        - html: "`$$w^{WS} = b + \\\\frac{a}{\\\\tau*(L-N)} = ${(calcs.w_demanded).toFixed(2)}$$`"  
-        - html: "`$$w^{PS} = q*(1-\\\\mu-umc) = ${(calcs.w_offered).toFixed(2)}$$`"
-        - html: "`$$\\\\mu = 1/\\\\varepsilon$$`"
+      sliders:
+      - {param: q_shock, label: "q"}
+      - {param: umc_shock, label: "umc"}
+      - {param: epsilon_shock, label: "\\varepsilon"}
+
+      - {param: WS_a_shock, label: "a"}
+      - {param: WS_b_shock, label: "b"}
+      - {param: WS_tau_shock, label: "\\tau"}
+
+
+
 
 
     ### PC Graph
     rightGraph:
       xAxis:
-        min: -0.1
+        min: -0.25
         max: params.L
         title: Employment, N
         ticks: 5
@@ -523,23 +519,7 @@ layout:
 
 
       ## OLD PHILLIPS CURVES
-      # Old Eq Phillips Curve
-      - Curve:
-          fn: "(params.WS_b_0 + params.WS_a_0/(params.WS_tau_0*(params.L - x)) - calcs.w_offered_0) / calcs.w_offered_0" # arbitrary WS curve but right shape
-          color: "'#a8699c'"
-          min: 0
-          max: params.L
-          lineStyle: dashed
-
       ## New PHILLIPS CURVES
-      # New Eq Phillips Curve
-      - Curve:
-          fn: "(calcs.WS_b + calcs.WS_a/(calcs.WS_tau*(params.L - x)) - calcs.w_offered) / calcs.w_offered" # arbitrary WS curve but right shape
-          color: "'#a8699c'"
-          min: 0
-          max: params.L
-          show: show_long_run
-
       # New Unstable Phillips Curve 1
       - Curve:
           fn: "(calcs.WS_b + calcs.WS_a/(calcs.WS_tau*(params.L - x)) - calcs.w_offered) / calcs.w_offered + calcs.barg_gap"
@@ -555,6 +535,24 @@ layout:
           min: 0
           max: params.L
           show: params.show_PC
+
+      # New Eq Phillips Curve
+      - Curve:
+          fn: "(calcs.WS_b + calcs.WS_a/(calcs.WS_tau*(params.L - x)) - calcs.w_offered) / calcs.w_offered" # arbitrary WS curve but right shape
+          color: "'#a8699c'"
+          min: 0
+          max: params.L
+          show: show_long_run
+
+
+      # Old Eq Phillips Curve
+      - Curve:
+          fn: "(params.WS_b_0 + params.WS_a_0/(params.WS_tau_0*(params.L - x)) - calcs.w_offered_0) / calcs.w_offered_0" # arbitrary WS curve but right shape
+          color: "'#a8699c'"
+          min: 0
+          max: params.L
+          lineStyle: dashed
+
 
       ## Short and Long-run Equilibria
       # Original equilibrium point
@@ -601,7 +599,7 @@ layout:
       ## Labels for PC Curves
       # New eq PC Curve with BG * 2
       - Label:
-          coordinates: [-0.075, calcs.text_new_PC_y_BG2]
+          coordinates: [-0.15, calcs.text_new_PC_y_BG2]
           text: "\\text{PC'}_2"
           color: "'#ff38a4'"
           bgcolor: none
@@ -609,7 +607,7 @@ layout:
 
       # New eq PC Curve with BG * 1
       - Label:
-          coordinates: [-0.075, calcs.text_new_PC_y_BG1]
+          coordinates: [-0.15, calcs.text_new_PC_y_BG1]
           text: "\\text{PC'}_1"
           color: "'#eb34c9'"
           bgcolor: none
@@ -617,27 +615,29 @@ layout:
 
       # New eq PC Curve
       - Label:
-          coordinates: [-0.075, calcs.text_new_PC_y]
+          coordinates: [-0.15, calcs.text_new_PC_y]
           text: "\\text{PC'}_0"
           color: "'#a8699c'"
           bgcolor: none
 
       # Old eq PC Curve
       - Label:
-          coordinates: [-0.075, calcs.text_old_PC_y]
+          coordinates: [-0.15, calcs.text_old_PC_y]
           text: "\\text{PC}_0"
           color: "'#a8699c'"
           bgcolor: white
 
 
-
     rightControls:
-      title: Inflation Outcome
+      title: Phillips Curves, Inflation
 
+      checkboxes:
+      - param: show_barg_gap
+        label: "\\text{Show Bargaining Gap}"
 
       divs:
         - html: "`<p>$$
-        \\\\text{Bargaining Gap} = \\\\frac{w^{WS} - w^{PS}}{w^{PS}} = ${(calcs.barg_gap*100).toFixed(2)}\\\\%
+        \\\\text{BG} = \\\\cfrac{w^{WS}-w^{PS}}{w^{PS}}=${(calcs.barg_gap*100).toFixed(2)}\\\\%
         $$</p>`"
 
 
