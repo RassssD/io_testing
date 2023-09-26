@@ -22,7 +22,7 @@ params:
 
   - name: WS_a_shock
     value: 0
-    min: -0.09
+    min: -0.1
     max: 0.1
     round: 0.01
 
@@ -92,6 +92,8 @@ params:
     value: true
 
 
+  - name: show_test_box
+    value: true
   - name: show_short_run
     value: false
   - name: show_long_run
@@ -205,7 +207,7 @@ layout:
       xAxis:
         min: 0
         max: params.L
-        title: Employment, N
+        title: Output, Y
         ticks: 5
       yAxis:
         intercept: 0
@@ -334,8 +336,35 @@ layout:
         title: Real wage, w
         ticks: 5
 
-
       objects:
+
+      ## TESTING SMALL GRAPH
+      - Rectangle:
+                x1: 0.6
+                x2: 1
+                y1: 0
+                y2: 0.4
+                fill: white
+                stroke: black
+                strokeWidth: 2
+                show: params.show_test_box
+
+      # Rescaled WS
+      - Curve:
+          fn: "(0.4*calcs.WS_b + 0.4*calcs.WS_a/(calcs.WS_tau*(params.L - x*0.6)))"
+          min: 0.6
+          max: 1
+          show: params.show_test_box
+          color: "'#eb34c9'"
+
+      # Rescaled PS
+      - Curve:
+          fn: "0.4*calcs.w_offered"
+          min: 0.6
+          max: 1
+          show: params.show_test_box
+
+
       ## BASIC GRAPH OBJECTS
       # Labour Force vertical line
       - Line:
@@ -485,6 +514,8 @@ layout:
       checkboxes:
       - param: show_long_run
         label: "\\text{Show supply-side (long-run) equilibrium}"
+      - param: show_test_box
+        label: "\\text{Show test box}"
 
       sliders:
       - {param: q_shock, label: "q"}
@@ -494,8 +525,6 @@ layout:
       - {param: WS_a_shock, label: "a"}
       - {param: WS_b_shock, label: "b"}
       - {param: WS_tau_shock, label: "\\tau"}
-
-
 
 
 
