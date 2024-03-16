@@ -1,13 +1,14 @@
 library(shiny)
 library(comprehenr)
 library(tidyverse)
+library(EnvStats)
 
 
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
   
   # App title ----
-  titlePanel("Hello Shiny!"),
+  titlePanel("Analysing Fair In"),
   
   # Sidebar layout with input and output definitions ----
   sidebarLayout(
@@ -17,10 +18,14 @@ ui <- fluidPage(
       
       # Select of income type
       selectInput(inputId = "distribution", label = h3("Income Distribution"), 
-                  choices = list("Fixed", "Random Normal"), 
+                  choices = list("Fixed", "Random Normal", "Pareto"), 
                   selected = "Fixed"),
       
-      # Fixed Distribution
+      
+      #=========================================================================#
+      # FIXED
+      #=========================================================================#
+      
       conditionalPanel(condition = "input.distribution == 'Fixed'",
         # Incomes
         p("Income distribution based on a median/mean income, a number of individuals in each group, and the difference in income between two consecutive individuals."),
@@ -33,14 +38,48 @@ ui <- fluidPage(
 
       ),
       
+      #=========================================================================#
+      # RANDOM NORMAL
+      #=========================================================================#
       conditionalPanel(condition = "input.distribution == 'Random Normal'",
         numericInput(inputId="rn_n_in_group", label = h3("Number in each group"), value = 50),
-        sliderInput("mean_income_slider", label = h3("Mean Income"), min = 0, 
+        
+        sliderInput("rn_mean_income_slider", label = h3("Mean Income"), min = 0, 
                     max = 100, value = c(25, 40), step=5),
-        numericInput(inputId="rn_var_men", label = h5("Variance - Men"), value = 3),
-        numericInput(inputId="rn_var_women", label = h5("Variance - Women"), value = 5),
-      ),
 
+        fluidRow(
+          column(width = 6,
+                 numericInput("rn_var_men", label=h5("Variance - Men"), value=10)
+          ),
+          column(width = 6, 
+                 numericInput("rn_var_women", label=h5("Variance - Women"), value=5)
+          )
+        )
+      ),
+      
+      
+      #=========================================================================#
+      # PARETO
+      #=========================================================================#
+      
+      conditionalPanel(condition = "input.distribution == 'Pareto'",
+       numericInput(inputId="pareto_n_in_group", label = h3("Number in each group"), value = 50),
+       
+       sliderInput("pareto_min_slider", label = h3("Mean Income"), min = 0, 
+                   max = 100, value = c(25, 40), step=5),
+       
+       fluidRow(
+         column(width = 6,
+                numericInput("pareto_scale_men", label=h5("Scale - Men"), value=100)
+         ),
+         column(width = 6, 
+                numericInput("pareto_scale_women", label=h5("Scale - Women"), value=50)
+         )
+       )
+      ),
+      
+
+      
 
       
     ),
@@ -63,6 +102,10 @@ server <- function(input, output) {
 
   incomes_df <- reactive({
 
+    #=========================================================================#
+    # FIXED
+    #=========================================================================#
+    
     if (input$distribution == "Fixed") {
       
       n_indivs = input$fixed_n_in_group
@@ -88,17 +131,39 @@ server <- function(input, output) {
       }
     }
     
+    #=========================================================================#
+    # RANDOM NORMAL
+    #=========================================================================#
+    
     if (input$distribution == "Random Normal") {
       
       n_indivs = input$rn_n_in_group
       
-      incomes_man <- pmax(rnorm(n_indivs, input$mean_income_slider[2], input$rn_var_men), 0)
-      incomes_woman <- pmax(rnorm(n_indivs, input$mean_income_slider[1], input$rn_var_women), 0)
+      
+      incomes_man <- pmax(rnorm(n_indivs, input$rn_mean_income_slider[2], input$rn_var_men), 0)
+      incomes_woman <- pmax(rnorm(n_indivs, input$rn_mean_income_slider[1], input$rn_var_women), 0)
       
       group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
       group_man <- to_vec(for(i in 1:n_indivs) "Man")
       
     }
+    
+    #=========================================================================#
+    # PARETO
+    #=========================================================================#
+    
+    if (input$distribution == "Pareto") {
+      
+      n_indivs = input$pareto_n_in_group
+      
+      incomes_man <- pmax(rpareto(n_indivs, input$pareto_min_slider[2], input$pareto_scale_men), 0)
+      incomes_woman <- pmax(rpareto(n_indivs, input$pareto_min_slider[1], input$pareto_scale_women), 0)
+      
+      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
+      group_man <- to_vec(for(i in 1:n_indivs) "Man")
+      
+    }
+    
     
     df <- data.frame(c(incomes_man, incomes_woman), c(group_man, group_woman))
     colnames(df) <- c("Income", "Group")
@@ -113,7 +178,19 @@ server <- function(input, output) {
     df <- incomes_df()
     hist_max_x <- ceiling(max(df$Income)/5)*5
     hist_max_y <- ceiling(max(table(round(df$Income))) * 1.1)
-    bins <- seq(from=0, to=hist_max_x, by=min(max(input$Delta, 0.25),1))
+    
+    # Different bins depending on number of indivs
+    # If fixed intervals, okay to just have individual levels / capped at 0.25
+    if (input$distribution == "Fixed") {
+      bins <- seq(from=0, to=hist_max_x, by=min(max(input$Delta, 0.25),1))
+    }
+    
+    # For RN, makes more sense to group more
+    else {
+      bins <- seq(from=0, to=hist_max_x, by=1)
+    }
+    
+
 
     ####
     p1 <- hist(subset(df, Group == "Woman")$Income, breaks=bins)
@@ -133,13 +210,15 @@ server <- function(input, output) {
     ##########
     df <- incomes_df()
     
-    n_indivs <- ifelse(input$distribution == "Fixed", input$fixed_n_in_group, input$rn_n_in_group)
+    n_indivs <- nrow(df)/ 2
+
+    #n_indivs <- ifelse(input$distribution == "Fixed", input$fixed_n_in_group, input$rn_n_in_group)
 
     df <- df[order(df$Group, df$Income),]
 
     df <- df %>% group_by(Group) %>% mutate(Cum_Income_Share = cumsum(Income) / sum(Income)) %>% ungroup()
     
-    
+
     df_draw_men <- df %>% filter(Group == "Man")
     cum_inc_share_men <- c(0) %>% append(df_draw_men$Cum_Income_Share)
     
@@ -152,8 +231,8 @@ server <- function(input, output) {
     
     steps = seq(0, 1, by=1/n_indivs)
     steps_all = seq(0, 1, by=0.5/n_indivs)
-    
-    
+
+
     plot(x=steps, y=steps, 
          type="l", col=1, lty=2, lwd=2,
          xlab="Cumulative Population", ylab="Cumulative Income", main="Lorenz Curves",
