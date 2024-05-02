@@ -18,9 +18,9 @@ ui <- fluidPage(
     sidebarPanel(
       
       # Select of income type
-      selectInput(inputId = "distribution", label = h3("Income Distribution"), 
-                  choices = list("Fixed", "Random Normal", "Pareto", "Random Log Normal", "Siblings"), 
-                  selected = "Siblings"),
+      #selectInput(inputId = "distribution", label = h3("Income Distribution"), 
+                  #choices = list("Fixed", "Random Normal", "Pareto", "Random Log Normal", "Siblings"), 
+                  #selected = "Siblings"),
       
       
       #=========================================================================#
@@ -106,36 +106,33 @@ ui <- fluidPage(
       # SIBLINGS
       #=========================================================================#
       
-      conditionalPanel(condition = "input.distribution == 'Siblings'",
+      conditionalPanel(condition = TRUE,#"input.distribution == 'Siblings'",
        numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
        
-       sliderInput("sib_phi", label = h4("Covariance between SSS' income (1-φ)"), min = 0, 
+       sliderInput("sib_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
                    max = 1, value = 0.6, step=0.05),
        
-       sliderInput("sib_mean_income_slider", label = h4("Mean Income"), min = 0, 
-                   max = 100, value = c(20, 50), step=1),
+       sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = -100, 
+                   max = 100, value = 25, step=5),
+       sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, 
+                   max = 100, value = -30, step=5)
        
-       fluidRow(
-         column(width = 6,
-                numericInput("sib_var_men", label=h5("Variance - Men"), value=0.5)
-         ),
-         column(width = 6, 
-                numericInput("sib_var_women", label=h5("Variance - Women"), value=1)
-         )
-       )
-       
-      ),
+      )
       
-    ),
+    , width = 4),
     
     # Main panel for displaying outputs ----
     mainPanel(
       
-      plotOutput(outputId = "distPlot"),
-      fluidRow(column(width=6, plotOutput(outputId = "GiniPlot")), column(width=3, tableOutput(outputId = "GiniTable")))
+      #plotOutput(outputId = "distPlot"),
+      #fluidRow(column(width=6, plotOutput(outputId = "GiniPlot")), column(width=3, tableOutput(outputId = "GiniTable")))
+      plotOutput(outputId = "GiniPlot", width="455px", height="500px"),
+      tags$h3("Gini Coefficient"),
+      tableOutput(outputId = "GiniTable")
+      
 
       
-    )
+    , width=8)
   )
 )
 
@@ -146,11 +143,15 @@ server <- function(input, output) {
 
   incomes_df <- reactive({
 
+    # For now, fix to siblings
+    distribution = input$distribution
+    distribution = "Siblings"
+    
     #=========================================================================#
     # FIXED
     #=========================================================================#
     
-    if (input$distribution == "Fixed") {
+    if (distribution == "Fixed") {
       
       n_indivs = input$fixed_n_in_group
       
@@ -179,7 +180,7 @@ server <- function(input, output) {
     # RANDOM NORMAL
     #=========================================================================#
     
-    if (input$distribution == "Random Normal") {
+    if (distribution == "Random Normal") {
       
       n_indivs = input$rn_n_in_group
       
@@ -196,7 +197,7 @@ server <- function(input, output) {
     # RANDOM LOG NORMAL
     #=========================================================================#
     
-    if (input$distribution == "Random Log Normal") {
+    if (distribution == "Random Log Normal") {
       
       n_indivs = input$rln_n_in_group
       
@@ -213,7 +214,7 @@ server <- function(input, output) {
     # PARETO
     #=========================================================================#
     
-    if (input$distribution == "Pareto") {
+    if (distribution == "Pareto") {
       
       n_indivs = input$pareto_n_in_group
       
@@ -230,22 +231,29 @@ server <- function(input, output) {
     # SIBLINGS WITH RLN
     #=========================================================================#
     
-    if (input$distribution == "Siblings") {
+    if (distribution == "Siblings") {
       
       n_indivs = input$sib_n_in_group
       sib_phi = input$sib_phi
       
+      # Obtain parameters
+      sib_RLN_mean_men = 10
+      sib_RLN_mean_women = sib_RLN_mean_men - input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
+      
+      sib_RLN_var_men = 1
+      sib_RLN_var_women = sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
+      
       # Generate original incomes
-      incomes_man <- pmax(rlnorm(n_indivs, log(input$sib_mean_income_slider[2]), input$sib_var_men), 0)
-      incomes_woman <- pmax(rlnorm(n_indivs, log(input$sib_mean_income_slider[1]), input$sib_var_women), 0)
+      incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
+      incomes_woman <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
       
       group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
       group_man <- to_vec(for(i in 1:n_indivs) "Man")
       
-      
+
       # Generate random element of the SSS income
-      incomes_man_sss_random <- pmax(rlnorm(n_indivs, log(input$sib_mean_income_slider[2]), input$sib_var_men), 0)
-      incomes_woman_sss_random <- pmax(rlnorm(n_indivs, log(input$sib_mean_income_slider[1]), input$sib_var_women), 0)
+      incomes_man_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
+      incomes_woman_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
       
       # Combine the two to get the SSS income
       incomes_man_sss = sib_phi * incomes_man_sss_random + (1-sib_phi) * incomes_man
@@ -255,7 +263,7 @@ server <- function(input, output) {
     }
     
     # If siblings, need to have some extra columns to make it work
-    if (input$distribution == "Siblings") {
+    if (distribution == "Siblings") {
       df <- data.frame(c(incomes_man, incomes_woman), c(incomes_man_sss, incomes_woman_sss), c(group_man, group_woman))
       colnames(df) <- c("Income", "Income_SSS", "Group")
     }
@@ -283,7 +291,11 @@ server <- function(input, output) {
     ##########
     df <- incomes_df()
     
-    if (input$distribution == "Siblings") {
+    # For now, fix to siblings
+    distribution = input$distribution
+    distribution = "Siblings"
+    
+    if (distribution == "Siblings") {
       df <- df %>%
         pivot_longer(cols = starts_with("Income"),
                      names_to = "Sibling",
@@ -296,12 +308,12 @@ server <- function(input, output) {
 
     # Different bins depending on number of indivs
     # If fixed intervals, okay to just have individual levels / capped at 0.25
-    if (input$distribution == "Fixed") {
+    if (distribution == "Fixed") {
       bins <- seq(from=0, to=hist_max_x, by=min(max(input$Delta, 0.25),1))
     }
     
     # RLN is annoying and weird, keep it separate for now
-    else if (input$distribution == "Random Log Normal" | input$distribution == "Siblings") {
+    else if (distribution == "Random Log Normal" | input$distribution == "Siblings") {
       
       # FOR NOW, JUST DON'T BOTHER WITH THIS
       
@@ -331,7 +343,7 @@ server <- function(input, output) {
     #print(max(freq$counts))
 
     
-    if (input$distribution == "Random Log Normal") {
+    if (distribution == "Random Log Normal") {
       p1 <- hist(subset(df, Group == "Woman")$Income, breaks = 20)#, breaks=bins)
       p2 <- hist(subset(df, Group == "Man")$Income, breaks=20)#, breaks=bins)
       
@@ -458,9 +470,9 @@ server <- function(input, output) {
                      values_to = "Income")
       
       # Within sibling
-      n = length(dataframe$Income)
+      n = length(dataframe_long$Income)
       
-      mad = sum(abs(dataframe$Income - dataframe$Income_SSS)) / n
+      mad = sum(abs(dataframe$Income - dataframe$Income_SSS)) / (0.5*n)
       rmad = mad / mean(dataframe_long$Income)
       gini = 0.5 * rmad * n/(n-1)
       
@@ -509,17 +521,26 @@ server <- function(input, output) {
     
     df <- incomes_df()
     
-    if (input$distribution == "Siblings") {
-      return(calc_sib_groub_gini(df))
+    # For now, fix to siblings
+    distribution <- input$distribution
+    distribution <- "Siblings"
+    
+    if (distribution == "Siblings") {
+      Gini_Table <- calc_sib_groub_gini(df)
+      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Within_SSS, Total))
+      
     }
     
     else {
-      return(calc_group_gini(df))
+      Gini_Table <- calc_group_gini(df)
     }
     
     
+    return(Gini_Table)
     
-  })
+    
+  }
+)
   
 }
 

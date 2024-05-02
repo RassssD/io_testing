@@ -110,7 +110,7 @@ calc_sib_gini <- function(dataframe) {
   rmad = mad / mean(dataframe_long$Income)
   gini = 0.5 * rmad * n/(n-1)
   
-  return(gini)
+  return(dataframe_long)
   
 }
 
@@ -151,6 +151,6 @@ calc_sib_groub_gini <- function(dataframe) {
 }
 
 
-calc_sib_groub_gini(df)
+print(calc_sib_gini(df), n=50)
 
 
