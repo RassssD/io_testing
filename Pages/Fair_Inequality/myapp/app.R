@@ -106,7 +106,7 @@ ui <- fluidPage(
       # SIBLINGS
       #=========================================================================#
       
-      conditionalPanel(condition = "TRUE",#"input.distribution == 'Siblings'",
+      conditionalPanel(condition = "1 == 1",#"input.distribution == 'Siblings'",
        numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
        
        sliderInput("sib_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
