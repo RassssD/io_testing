@@ -112,7 +112,7 @@ ui <- fluidPage(
        sliderInput("sib_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
                    max = 1, value = 0.6, step=0.05),
        
-       sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = -100, 
+       sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = 0, 
                    max = 100, value = 25, step=5),
        sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, 
                    max = 100, value = -30, step=5)
@@ -234,12 +234,12 @@ server <- function(input, output) {
     if (distribution == "Siblings") {
       
       n_indivs = input$sib_n_in_group
-      sib_phi = input$sib_phi
+      sib_phi = 1 - input$sib_phi
       
       # Obtain parameters
       sib_RLN_mean_men = 10
       sib_RLN_mean_women = sib_RLN_mean_men - input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
-      
+
       sib_RLN_var_men = 1
       sib_RLN_var_women = sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
       
@@ -527,7 +527,7 @@ server <- function(input, output) {
     
     if (distribution == "Siblings") {
       Gini_Table <- calc_sib_groub_gini(df)
-      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Within_SSS, Total))
+      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total, Within_SSS))
       
     }
     
