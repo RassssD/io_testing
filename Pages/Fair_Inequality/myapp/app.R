@@ -114,8 +114,15 @@ ui <- fluidPage(
        
        sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = 0, 
                    max = 100, value = 25, step=5),
-       sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, 
-                   max = 100, value = -30, step=5)
+       #sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, max = 100, value = -30, step=5),
+       fluidRow(
+         column(width = 6,
+                numericInput("sib_rln_var_men_test", label=h5("Variance - Men"), value=1)
+         ),
+         column(width = 6, 
+                numericInput("sib_rln_var_women_test", label=h5("Variance - Women"), value=1)
+         )
+       )
        
       )
       
@@ -240,8 +247,8 @@ server <- function(input, output) {
       sib_RLN_mean_men = 10
       sib_RLN_mean_women = sib_RLN_mean_men - input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
 
-      sib_RLN_var_men = 1
-      sib_RLN_var_women = sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
+      sib_RLN_var_men = input$sib_rln_var_men_test
+      sib_RLN_var_women = input$sib_rln_var_women_test #sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
       
       # Generate original incomes
       incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)

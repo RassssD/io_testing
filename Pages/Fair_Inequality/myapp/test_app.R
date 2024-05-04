@@ -154,3 +154,31 @@ calc_sib_groub_gini <- function(dataframe) {
 print(calc_sib_gini(df), n=50)
 
 
+# Testing for it
+
+calc_total_gini <- function(inc_vector){
+  # Get incomes
+  
+  incomes = inc_vector
+  n = length(incomes)
+  
+  # Need to divide and multiply to divide by the right amount and get the correct mean
+  mad = sum(as.numeric(dist(incomes))) / (0.5 * n^2)
+  rmad = mad / mean(incomes)
+  gini = 0.5 * rmad * n/(n-1)
+  
+  # Get all possible pairs
+  return(gini)
+}
+
+inc_men <- c(1,1,5)
+inc_wom <- c(1,1,5)
+inc_all <- c(inc_men, inc_wom)
+
+calc_total_gini(inc_men)
+calc_total_gini(inc_wom)
+calc_total_gini(inc_all)
+
+
+
+
