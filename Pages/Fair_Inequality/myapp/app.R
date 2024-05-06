@@ -309,7 +309,6 @@ server <- function(input, output) {
                      values_to = "Income")
     }
 
-    print(max(df$Income))
     
     hist_max_x <- ceiling(max(df$Income)/5)*5
 
@@ -339,7 +338,6 @@ server <- function(input, output) {
     # For RN, makes more sense to group more
     else {
       bins <- seq(from=0, to=hist_max_x, by=1)
-      print(bins)
 
     }
     
@@ -347,7 +345,6 @@ server <- function(input, output) {
     
     freq = hist(df$Income, breaks=bins, include.lowest=TRUE, plot=FALSE)
     hist_max_y <- ceiling(max(freq$counts))
-    #print(max(freq$counts))
 
     
     if (distribution == "Random Log Normal") {
@@ -475,11 +472,14 @@ server <- function(input, output) {
         pivot_longer(cols = starts_with("Income"),
                      names_to = "Sibling",
                      values_to = "Income")
-      
+      #print(dataframe_long)
       # Within sibling
       n = length(dataframe_long$Income)
+      n_pairs = length(dataframe$Income)
+      #print(n)
+      #print(n_pairs)
       
-      mad = sum(abs(dataframe$Income - dataframe$Income_SSS)) / (0.5*n)
+      mad = sum(abs(dataframe$Income - dataframe$Income_SSS)) / (0.5*n_pairs)
       rmad = mad / mean(dataframe_long$Income)
       gini = 0.5 * rmad * n/(n-1)
       
@@ -511,8 +511,9 @@ server <- function(input, output) {
       for(group in unique(dataframe$Group)){
         # Calculate group Gini and sibling gini
         df_group <- df %>% filter(Group == group)
+        df_long_group <- dataframe_long %>% filter(Group == group)
         
-        group_gini <- calc_total_gini(df_group)
+        group_gini <- calc_total_gini(df_long_group)
         group_sib_gini <- calc_sib_gini(df_group)
         
         
@@ -535,7 +536,7 @@ server <- function(input, output) {
     if (distribution == "Siblings") {
       Gini_Table <- calc_sib_groub_gini(df)
       Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total, Within_SSS))
-      
+      #print(df)
     }
     
     else {

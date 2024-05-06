@@ -166,6 +166,8 @@ calc_total_gini <- function(inc_vector){
   mad = sum(as.numeric(dist(incomes))) / (0.5 * n^2)
   rmad = mad / mean(incomes)
   gini = 0.5 * rmad * n/(n-1)
+  print(mad)
+  print(mean(incomes))
   
   # Get all possible pairs
   return(gini)
