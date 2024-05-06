@@ -479,7 +479,7 @@ server <- function(input, output) {
       #print(n)
       #print(n_pairs)
       
-      mad = sum(abs(dataframe$Income - dataframe$Income_SSS)) / (0.5*n_pairs)
+      mad = sum(abs(dataframe$Income - dataframe$Income_SSS)) / (n_pairs)
       rmad = mad / mean(dataframe_long$Income)
       gini = 0.5 * rmad * n/(n-1)
       
