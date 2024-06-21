@@ -3,6 +3,7 @@ library(comprehenr)
 library(tidyverse)
 library(EnvStats)
 library(ggplot2)
+library(cowplot)
 
 
 #=========================================================================#
@@ -201,8 +202,7 @@ gen_preload_inc_data = function(n_samples = 10, n_indivs = 100) {
 # Function for selecting the needed data
 # Specify the parameter to vary, 
 select_pregen_inc_data = function(df_pregen_data, n_select = 10, param_to_vary = "X", val_phi = -1, val_GG = -1, val_var = -1) {
-  df_pregen_data %>% filter(GG == val_GG, Var == val_var, Phi == val_phi) %>% nrow() %>% print()
-  print(c(val_GG, val_var, val_phi))
+
   ## Filter the appropriate each time, rename the desired column to fit drawing functions
   # Phi is the wanted parameter
   if (val_phi == -1) {
