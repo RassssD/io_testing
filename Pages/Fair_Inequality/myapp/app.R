@@ -90,8 +90,9 @@ gen_plots = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_selec
   # all together
   #plots = c(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
   
-  plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
-                        ncol=3, nrow=2)
+  #plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
+                        #ncol=3, nrow=2)
+  plots = plot_gini_phi
   
   return(plots)
 }
