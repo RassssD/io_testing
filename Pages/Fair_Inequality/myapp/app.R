@@ -3,7 +3,7 @@ library(comprehenr)
 library(tidyverse)
 library(EnvStats)
 library(ggplot2)
-library(cowplot)
+#library(cowplot)
 #library(imager)
 library(gridExtra)
 
@@ -661,7 +661,7 @@ server <- function(input, output) {
     #gridExtra::grid.arrange(grobs=gl)
     
     
-    save_plot(filename = "./images/param_plots.png", plot = param_plot_grid())
+    #save_plot(filename = "./images/param_plots.png", plot = param_plot_grid())
     list(src = "./images/param_plots_new.png",
          width=600,
          height=400)
