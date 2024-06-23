@@ -2,10 +2,10 @@ library(shiny)
 library(comprehenr)
 library(tidyverse)
 library(EnvStats)
-#library(ggplot2)
-#library(cowplot)
+library(ggplot2)
+library(cowplot)
 #library(imager)
-#library(gridExtra)
+library(gridExtra)
 
 
 create_app = function() {
@@ -21,102 +21,102 @@ create_app()
 #=========================================================================#
 
 # Function for plotting the Gini
-# plot_gini = function(df_data, x_title = "Param", y_title = "Gini") {
-# 
-#   step_param = 0.25
-# 
-#   x_min = min(df_data$ValParam)
-#   x_max = max(df_data$ValParam)
-# 
-#   y_min = 0 # floor(min(df_data$Total) / step_param) * step_param
-#   y_max = 1 # min(ceiling(max(df_data$Total) / step_param) * step_param, 1)
-# 
-# 
-#   # Plot
-#   df_data %>% group_by(ValParam, Group) %>% mutate(Mean_Gini = mean(Total)) %>%
-#     ggplot(aes(x=ValParam, y = Mean_Gini, color=Group)) +
-#     #geom_line(size = 1) +
-#     geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
-#     theme_classic() +
-#     theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
-#           legend.position = "none",
-#           panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
-#           plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
-#           ) +
-#     scale_color_manual(values=c("black", "blue", "red")) +
-#     scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
-#     scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
-#     xlab(x_title) + ylab(y_title)
-# }
-# 
-# 
-# # Function for plotting the Share Fair
-# plot_SF = function(df_data, x_title = "Param", y_title = "% Fair") {
-# 
-#   step_param = 25
-# 
-#   x_min = min(df_data$ValParam)
-#   x_max = max(df_data$ValParam)
-# 
-#   y_min = 0 # floor(min(df_data$ShareFair) / step_param) * step_param
-#   y_max = 100 # min(ceiling(max(df_data$ShareFair) / step_param) * step_param, 100)
-# 
-#   # Plot
-#   df_data %>% group_by(ValParam, Group) %>% mutate(Mean_SF = mean(ShareFair)) %>%
-#     ggplot(aes(x=ValParam, y = Mean_SF, color=Group)) +
-#     #geom_line(size = 1) +
-#     geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
-#     theme_classic() +
-#     theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
-#           legend.position = "none",
-#           panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
-#           plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
-#     ) +
-#     scale_color_manual(values=c("black", "blue", "red")) +
-#     scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
-#     scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
-#     xlab(x_title) + ylab(y_title)
-# }
-# 
-# 
-# 
-# # Get the plots, separate from the data generation
-# gen_plots = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
-#   
-#   plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
-#   plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "φ", y_title = "% Fair")
-#   
-#   # GG
-#   plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
-#   plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
-#   
-#   # Var
-#   plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
-#   plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
-#   
-#   
-#   # Direct grid
-#   plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
-#                     ncol=3, nrow=2)
-#   
-#   # Workaround
-#   # list_plots = list(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
-#   # 
-#   # for (i in 1:6) {
-#   #   ggsave(filename = sprintf("./images/param_plots_%s.png", i), plot = list_plots[[i]],
-#   #          width = 4, height = 4)
-#   # }
-#   # 
-#   # 
-#   # 
-#   # rl = lapply(sprintf("./images/param_plots_%s.png", 1:6), png::readPNG)
-#   # gl = lapply(rl, grid::rasterGrob)
-#   # grid_plot = gridExtra::arrangeGrob(grobs=gl, nrow=2, ncol=3)
-#   # 
-#   # ggsave(filename = "./images/param_plots_new.png", plot = grid_plot)
-#   
-#   return(plots)
-# }
+plot_gini = function(df_data, x_title = "Param", y_title = "Gini") {
+
+  step_param = 0.25
+
+  x_min = min(df_data$ValParam)
+  x_max = max(df_data$ValParam)
+
+  y_min = 0 # floor(min(df_data$Total) / step_param) * step_param
+  y_max = 1 # min(ceiling(max(df_data$Total) / step_param) * step_param, 1)
+
+
+  # Plot
+  df_data %>% group_by(ValParam, Group) %>% mutate(Mean_Gini = mean(Total)) %>%
+    ggplot(aes(x=ValParam, y = Mean_Gini, color=Group)) +
+    #geom_line(size = 1) +
+    geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
+    theme_classic() +
+    theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+          panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
+          plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
+          ) +
+    scale_color_manual(values=c("black", "blue", "red")) +
+    scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
+    scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
+    xlab(x_title) + ylab(y_title)
+}
+
+
+# Function for plotting the Share Fair
+plot_SF = function(df_data, x_title = "Param", y_title = "% Fair") {
+
+  step_param = 25
+
+  x_min = min(df_data$ValParam)
+  x_max = max(df_data$ValParam)
+
+  y_min = 0 # floor(min(df_data$ShareFair) / step_param) * step_param
+  y_max = 100 # min(ceiling(max(df_data$ShareFair) / step_param) * step_param, 100)
+
+  # Plot
+  df_data %>% group_by(ValParam, Group) %>% mutate(Mean_SF = mean(ShareFair)) %>%
+    ggplot(aes(x=ValParam, y = Mean_SF, color=Group)) +
+    #geom_line(size = 1) +
+    geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
+    theme_classic() +
+    theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+          panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
+          plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
+    ) +
+    scale_color_manual(values=c("black", "blue", "red")) +
+    scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
+    scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
+    xlab(x_title) + ylab(y_title)
+}
+
+
+
+# Get the plots, separate from the data generation
+gen_plots = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
+  
+  plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
+  plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "φ", y_title = "% Fair")
+  
+  # GG
+  plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
+  plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
+  
+  # Var
+  plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
+  plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
+  
+  
+  # Direct grid
+  plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
+                    ncol=3, nrow=2)
+  
+  # Workaround
+  # list_plots = list(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
+  # 
+  # for (i in 1:6) {
+  #   ggsave(filename = sprintf("./images/param_plots_%s.png", i), plot = list_plots[[i]],
+  #          width = 4, height = 4)
+  # }
+  # 
+  # 
+  # 
+  # rl = lapply(sprintf("./images/param_plots_%s.png", 1:6), png::readPNG)
+  # gl = lapply(rl, grid::rasterGrob)
+  # grid_plot = gridExtra::arrangeGrob(grobs=gl, nrow=2, ncol=3)
+  # 
+  # ggsave(filename = "./images/param_plots_new.png", plot = grid_plot)
+  
+  return(plots)
+}
 
 
 
@@ -126,136 +126,136 @@ create_app()
 #=========================================================================#
 
 
-# calc_total_combs = function() {
-#   
-#   phi_list = seq(phi_min, phi_max, by=phi_step)
-#   GG_list = seq(GG_min, GG_max, by=GG_step)
-#   var_list = seq(var_min, var_max, by=var_step)
-#   
-#   # All combinations
-#   total_combs = length(phi_list) * length(GG_list) * length(var_list)
-#   
-#   return(total_combs)
-# }
-# 
-# 
-# # Function to pregenerate the data
-# gen_preload_inc_data = function(n_samples = 10, n_indivs = 100) {
-#   
-#   phi_min = 0
-#   phi_max = 1
-#   phi_step = 0.05
-#   
-#   GG_min = -1
-#   GG_max = 1
-#   GG_step = 0.05
-#   
-#   var_min = 0
-#   var_max = 2
-#   var_step = 0.05
-#   
-#   mean_man = 10
-#   
-#   # List of vars
-#   phi_list = seq(phi_min, phi_max, by=phi_step)
-#   GG_list = seq(GG_min, GG_max, by=GG_step)
-#   var_list = seq(var_min, var_max, by=var_step)
-#   
-#   # All combinations
-#   total_combs = length(phi_list) * length(GG_list) * length(var_list)
-#   
-#   df_param_combs = expand.grid(phi_list, GG_list, var_list)
-#   colnames(df_param_combs) = c("Phi", "GG", "Var")
-#   
-#   
-#   df_data = data.frame(matrix(ncol = 10, nrow = 0))
-#   colnames(df_data) <- c("Total_All", "Total_Man", "Total_Woman", "ShareFair_All", "ShareFair_Man", "ShareFair_Woman", "Phi", "GG", "Var", "N_Sim")
-#   
-#   # Loop over each combination of values
-#   for (i in 1:total_combs) {
-#     
-#     # Parameters for this iteration
-#     vals = df_param_combs[i, ]
-#     val_phi = vals$Phi
-#     val_GG = vals$GG
-#     val_var = vals$Var
-#     
-#     mean_woman = mean_man + val_GG * mean_man
-#     
-#     # Create N simulations for each combination
-#     for (n in 1:n_samples) {
-#       
-#       print(sprintf("Iteration %s / %s", i * n_samples + n, total_combs * n_samples))
-#       
-#       # Main data
-#       df <- gen_inc_df(n_indivs, phi_man = val_phi, phi_woman = val_phi, mean_man = mean_man, mean_woman = mean_woman, var_man = val_var, var_woman = val_var)
-#       
-#       # Calculate Gini etc
-#       df_gini = calc_sib_groub_gini(df) %>% select(c(Group, Total, ShareFair)) %>% pivot_wider(names_from = Group, values_from = c(Total, ShareFair))
-#       
-#       # Add param values
-#       df_gini$Phi = val_phi
-#       df_gini$GG = val_GG
-#       df_gini$Var = val_var
-#       df_gini$N_Sim = n
-#       
-#       # Append
-#       df_data <- df_data %>% bind_rows(df_gini)
-#       
-#       
-#     }
-#   }
-#   
-#   df_data_long = df_data %>%
-#     pivot_longer(cols = -c(Phi, GG, Var, N_Sim), 
-#                  names_to = c(".value", "Group"), 
-#                  names_pattern = "(Total|ShareFair)_(All|Man|Woman)")
-#   
-#   return(df_data_long)
-# }
-# 
-# #df_preload_data = gen_preload_inc_data(n_samples = 10)
-# #write.csv(df_preload_data, "C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/pregen_data.csv")
-# 
-# 
-# # Function for selecting the needed data
-# # Specify the parameter to vary, 
-# select_pregen_inc_data = function(df_pregen_data, n_select = 10, param_to_vary = "X", val_phi = -1, val_GG = -1, val_var = -1) {
-# 
-#   ## Filter the appropriate each time, rename the desired column to fit drawing functions
-#   # Phi is the wanted parameter
-#   if (val_phi == -1) {
-#     df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Var == val_var) %>% 
-#       mutate(ValParam = Phi) %>%
-#       select(-c(Phi, GG, Var))
-#   }
-#   
-#   # GG is the wanted parameter
-#   if (val_GG == -1) {
-#     df_pregen_data_filtered = df_pregen_data %>% filter(Phi == val_phi, Var == val_var) %>% 
-#       mutate(ValParam = GG) %>%
-#       select(-c(Phi, GG, Var))
-#   }
-#   
-#   # Var is the wanted parameter
-#   if (val_var == -1) {
-#     df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Phi == val_phi) %>% 
-#       mutate(ValParam = Var) %>%
-#       select(-c(Phi, GG, Var))
-#   }
-#   
-#   
-#   # Draw a number of observations to create fake randomness
-#   # Need to figure this out, but it mostly works
-#   #n_max = df_pregen_data_filtered %>% length()
-#   #n_select = min(n_max, n_select)
-#   
-#   #df_pregen_data_sampled = df_pregen_data_filtered[sample(nrow(df_pregen_data_filtered), n_select), ]
-#   
-#   return(df_pregen_data_filtered)
-#   
-# }
-# 
+calc_total_combs = function() {
+  
+  phi_list = seq(phi_min, phi_max, by=phi_step)
+  GG_list = seq(GG_min, GG_max, by=GG_step)
+  var_list = seq(var_min, var_max, by=var_step)
+  
+  # All combinations
+  total_combs = length(phi_list) * length(GG_list) * length(var_list)
+  
+  return(total_combs)
+}
+
+
+# Function to pregenerate the data
+gen_preload_inc_data = function(n_samples = 10, n_indivs = 100) {
+  
+  phi_min = 0
+  phi_max = 1
+  phi_step = 0.05
+  
+  GG_min = -1
+  GG_max = 1
+  GG_step = 0.05
+  
+  var_min = 0
+  var_max = 2
+  var_step = 0.05
+  
+  mean_man = 10
+  
+  # List of vars
+  phi_list = seq(phi_min, phi_max, by=phi_step)
+  GG_list = seq(GG_min, GG_max, by=GG_step)
+  var_list = seq(var_min, var_max, by=var_step)
+  
+  # All combinations
+  total_combs = length(phi_list) * length(GG_list) * length(var_list)
+  
+  df_param_combs = expand.grid(phi_list, GG_list, var_list)
+  colnames(df_param_combs) = c("Phi", "GG", "Var")
+  
+  
+  df_data = data.frame(matrix(ncol = 10, nrow = 0))
+  colnames(df_data) <- c("Total_All", "Total_Man", "Total_Woman", "ShareFair_All", "ShareFair_Man", "ShareFair_Woman", "Phi", "GG", "Var", "N_Sim")
+  
+  # Loop over each combination of values
+  for (i in 1:total_combs) {
+    
+    # Parameters for this iteration
+    vals = df_param_combs[i, ]
+    val_phi = vals$Phi
+    val_GG = vals$GG
+    val_var = vals$Var
+    
+    mean_woman = mean_man + val_GG * mean_man
+    
+    # Create N simulations for each combination
+    for (n in 1:n_samples) {
+      
+      print(sprintf("Iteration %s / %s", i * n_samples + n, total_combs * n_samples))
+      
+      # Main data
+      df <- gen_inc_df(n_indivs, phi_man = val_phi, phi_woman = val_phi, mean_man = mean_man, mean_woman = mean_woman, var_man = val_var, var_woman = val_var)
+      
+      # Calculate Gini etc
+      df_gini = calc_sib_groub_gini(df) %>% select(c(Group, Total, ShareFair)) %>% pivot_wider(names_from = Group, values_from = c(Total, ShareFair))
+      
+      # Add param values
+      df_gini$Phi = val_phi
+      df_gini$GG = val_GG
+      df_gini$Var = val_var
+      df_gini$N_Sim = n
+      
+      # Append
+      df_data <- df_data %>% bind_rows(df_gini)
+      
+      
+    }
+  }
+  
+  df_data_long = df_data %>%
+    pivot_longer(cols = -c(Phi, GG, Var, N_Sim), 
+                 names_to = c(".value", "Group"), 
+                 names_pattern = "(Total|ShareFair)_(All|Man|Woman)")
+  
+  return(df_data_long)
+}
+
+#df_preload_data = gen_preload_inc_data(n_samples = 10)
+#write.csv(df_preload_data, "C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/pregen_data.csv")
+
+
+# Function for selecting the needed data
+# Specify the parameter to vary, 
+select_pregen_inc_data = function(df_pregen_data, n_select = 10, param_to_vary = "X", val_phi = -1, val_GG = -1, val_var = -1) {
+
+  ## Filter the appropriate each time, rename the desired column to fit drawing functions
+  # Phi is the wanted parameter
+  if (val_phi == -1) {
+    df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Var == val_var) %>% 
+      mutate(ValParam = Phi) %>%
+      select(-c(Phi, GG, Var))
+  }
+  
+  # GG is the wanted parameter
+  if (val_GG == -1) {
+    df_pregen_data_filtered = df_pregen_data %>% filter(Phi == val_phi, Var == val_var) %>% 
+      mutate(ValParam = GG) %>%
+      select(-c(Phi, GG, Var))
+  }
+  
+  # Var is the wanted parameter
+  if (val_var == -1) {
+    df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Phi == val_phi) %>% 
+      mutate(ValParam = Var) %>%
+      select(-c(Phi, GG, Var))
+  }
+  
+  
+  # Draw a number of observations to create fake randomness
+  # Need to figure this out, but it mostly works
+  #n_max = df_pregen_data_filtered %>% length()
+  #n_select = min(n_max, n_select)
+  
+  #df_pregen_data_sampled = df_pregen_data_filtered[sample(nrow(df_pregen_data_filtered), n_select), ]
+  
+  return(df_pregen_data_filtered)
+  
+}
+
 
 
 
@@ -264,7 +264,7 @@ create_app()
 #=========================================================================#
 
 # Load the data
-#df_preload_data = read.csv("C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/data/pregen_data.csv")
+df_preload_data = read.csv("C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/data/pregen_data.csv")
 
 # Define UI for app that draws a histogram ----
 ui <- tagList(
@@ -353,7 +353,7 @@ ui <- tagList(
                mainPanel(
                  
                  #plotOutput(outputId = "param_plots", width="455px", height="500px"),
-                 #imageOutput("params_plot"),
+                 imageOutput("params_plot"),
                  "End"
                  
                  , width=8)
@@ -651,29 +651,29 @@ server <- function(input, output) {
   
   
   # Plot grid
-  # param_plot_grid = reactive({
-  # 
-  #   list_plots = gen_plots(df_preload_data, 
-  #                     val_phi = input$params_phi, 
-  #                     val_GG = input$params_GG, 
-  #                     val_var = input$params_var_inc)
-  #   
-  # })
+  param_plot_grid = reactive({
+
+    list_plots = gen_plots(df_preload_data, 
+                      val_phi = input$params_phi, 
+                      val_GG = input$params_GG, 
+                      val_var = input$params_var_inc)
+    
+  })
   
-  # output$params_plot = renderImage({
-  #   
-  #   
-  #   
-  #   #rl = lapply(sprintf("my_viz%i.png", 1:4), png::readPNG)
-  #   #gl = lapply(rl, grid::rasterGrob)
-  #   #gridExtra::grid.arrange(grobs=gl)
-  #   
-  #   
-  #   save_plot(filename = "./images/param_plots.png", plot = param_plot_grid())
-  #   list(src = "./images/param_plots.png",
-  #        width=1000,
-  #        height=650)
-  # }, deleteFile = FALSE)
+  output$params_plot = renderImage({
+    
+    
+    
+    #rl = lapply(sprintf("my_viz%i.png", 1:4), png::readPNG)
+    #gl = lapply(rl, grid::rasterGrob)
+    #gridExtra::grid.arrange(grobs=gl)
+    
+    
+    save_plot(filename = "./images/param_plots.png", plot = param_plot_grid())
+    list(src = "./images/param_plots.png",
+         width=1000,
+         height=650)
+  }, deleteFile = FALSE)
   
 }
 
