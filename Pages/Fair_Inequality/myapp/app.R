@@ -3,9 +3,17 @@ library(comprehenr)
 library(tidyverse)
 library(EnvStats)
 library(ggplot2)
-#library(cowplot)
+library(cowplot)
 #library(imager)
 library(gridExtra)
+
+
+create_app = function() {
+  setwd("C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality")
+  shinylive::export(appdir = "myapp", destdir = "docs")
+}
+
+create_app()
 
 
 #=========================================================================#
@@ -92,20 +100,20 @@ gen_plots = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_selec
                     ncol=3, nrow=2)
   
   # Workaround
-  list_plots = list(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
-  
-  for (i in 1:6) {
-    ggsave(filename = sprintf("./images/param_plots_%s.png", i), plot = list_plots[[i]],
-           width = 4, height = 4)
-  }
-  
-  
-  
-  rl = lapply(sprintf("./images/param_plots_%s.png", 1:6), png::readPNG)
-  gl = lapply(rl, grid::rasterGrob)
-  grid_plot = gridExtra::arrangeGrob(grobs=gl, nrow=2, ncol=3)
-  
-  ggsave(filename = "./images/param_plots_new.png", plot = grid_plot)
+  # list_plots = list(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
+  # 
+  # for (i in 1:6) {
+  #   ggsave(filename = sprintf("./images/param_plots_%s.png", i), plot = list_plots[[i]],
+  #          width = 4, height = 4)
+  # }
+  # 
+  # 
+  # 
+  # rl = lapply(sprintf("./images/param_plots_%s.png", 1:6), png::readPNG)
+  # gl = lapply(rl, grid::rasterGrob)
+  # grid_plot = gridExtra::arrangeGrob(grobs=gl, nrow=2, ncol=3)
+  # 
+  # ggsave(filename = "./images/param_plots_new.png", plot = grid_plot)
   
   return(plots)
 }
@@ -661,10 +669,10 @@ server <- function(input, output) {
     #gridExtra::grid.arrange(grobs=gl)
     
     
-    #save_plot(filename = "./images/param_plots.png", plot = param_plot_grid())
-    list(src = "./images/param_plots_new.png",
-         width=600,
-         height=400)
+    save_plot(filename = "./images/param_plots.png", plot = param_plot_grid())
+    list(src = "./images/param_plots.png",
+         width=1000,
+         height=650)
   }, deleteFile = FALSE)
   
 }
