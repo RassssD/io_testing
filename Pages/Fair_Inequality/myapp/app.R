@@ -2,10 +2,10 @@ library(shiny)
 library(comprehenr)
 library(tidyverse)
 library(EnvStats)
-library(ggplot2)
-library(cowplot)
+#library(ggplot2)
+#library(cowplot)
 #library(imager)
-library(gridExtra)
+#library(gridExtra)
 
 
 create_app = function() {
