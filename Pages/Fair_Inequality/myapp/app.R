@@ -272,10 +272,6 @@ ui <- fluidPage(
   # App title ----
   titlePanel("Analysing Fair Inequality"),
   
-  navbarPage(
-    "Page",
-    tabPanel("Overall",
-      
       # Sidebar layout with input and output definitions ----
       sidebarLayout(
         
@@ -321,47 +317,8 @@ ui <- fluidPage(
           
           , width=8)
       )
-    ),
-
-    tabPanel("Secondary", 
-             
-             # Sidebar layout with input and output definitions ----
-             sidebarLayout(
-               
-               #=========================================================================#
-               # INPUT
-               #=========================================================================#
-               sidebarPanel(
-                 
-                 # SIBLINGS
-                 
-                 conditionalPanel(condition = TRUE,#"input.distribution == 'Siblings'",
-                                  sliderInput("params_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, men"), min = 0, 
-                                              max = 1, value = 0.6, step=0.05),
-                                  sliderInput("params_GG", HTML("Unfair Inequality: Gender Gap (%)"), min = -1, 
-                                              max = 1, value = -0.2, step=0.05),
-                                  sliderInput("params_var_inc", HTML("Variance"), min = 0, 
-                                              max = 2, value = 1, step=0.05),
-                                  
-                 )
-                 
-                 , width = 4),
-               
-               #=========================================================================#
-               # OUTPUT
-               #=========================================================================#
-               mainPanel(
-                 
-                 #plotOutput(outputId = "param_plots", width="455px", height="500px"),
-                 #imageOutput("params_plot"),
-                 "End"
-                 
-                 , width=8)
-             )
-             
     )
-  )
-)
+
 
 
 # Define server logic required to draw a histogram ----
