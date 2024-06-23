@@ -267,7 +267,7 @@ create_app = function() {
 #df_preload_data = read.csv("C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/data/pregen_data.csv")
 
 # Define UI for app that draws a histogram ----
-ui <- tagList(
+ui <- fluidPage(
   
   # App title ----
   titlePanel("Analysing Fair Inequality"),
