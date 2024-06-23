@@ -13,7 +13,7 @@ create_app = function() {
   shinylive::export(appdir = "myapp", destdir = "docs")
 }
 
-create_app()
+#create_app()
 
 
 #=========================================================================#
