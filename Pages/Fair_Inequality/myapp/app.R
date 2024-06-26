@@ -367,7 +367,7 @@ server <- function(input, output) {
     
     if (distribution == "Siblings") {
       Gini_Table <- calc_sib_groub_gini(df)
-      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Within_SSS))
+      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total))
       #print(df)
     }
     
