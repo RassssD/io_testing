@@ -73,84 +73,6 @@ server <- function(input, output) {
     distribution = input$distribution
     distribution = "Siblings"
     
-    #=========================================================================#
-    # FIXED
-    #=========================================================================#
-    
-    if (distribution == "Fixed") {
-      
-      n_indivs = input$fixed_n_in_group
-      
-      base_income_woman <- input$fixed_mean_income_slider[1]
-      base_income_man <- input$fixed_mean_income_slider[2]
-      
-      income_step_woman <- input$income_step_slider[1]
-      income_step_man <- input$income_step_slider[2]
-      n_indivs_step <- floor(n_indivs/2)
-      
-      incomes_woman <- to_vec(for(i in -n_indivs_step:n_indivs_step) max(base_income_woman + income_step_woman * i, 0))
-      incomes_man <- to_vec(for(i in -n_indivs_step:n_indivs_step) max(base_income_man + income_step_man * i, 0))
-      
-      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
-      group_man <- to_vec(for(i in 1:n_indivs) "Man")
-      
-      # Logic for handling even numbers - remove the base number
-      if (floor(n_indivs/2) == n_indivs/2) {
-        incomes_woman <- incomes_woman[-(n_indivs/2+1)]
-        incomes_man <- incomes_man[-(n_indivs/2+1)]
-  
-      }
-    }
-    
-    #=========================================================================#
-    # RANDOM NORMAL
-    #=========================================================================#
-    
-    if (distribution == "Random Normal") {
-      
-      n_indivs = input$rn_n_in_group
-      
-      
-      incomes_man <- pmax(rnorm(n_indivs, input$rn_mean_income_slider[2], input$rn_var_men), 0)
-      incomes_woman <- pmax(rnorm(n_indivs, input$rn_mean_income_slider[1], input$rn_var_women), 0)
-      
-      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
-      group_man <- to_vec(for(i in 1:n_indivs) "Man")
-      
-    }
-    
-    #=========================================================================#
-    # RANDOM LOG NORMAL
-    #=========================================================================#
-    
-    if (distribution == "Random Log Normal") {
-      
-      n_indivs = input$rln_n_in_group
-      
-      
-      incomes_man <- pmax(rlnorm(n_indivs, log(input$rln_mean_income_slider[2]), input$rln_var_men), 0)
-      incomes_woman <- pmax(rlnorm(n_indivs, log(input$rln_mean_income_slider[1]), input$rln_var_women), 0)
-      
-      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
-      group_man <- to_vec(for(i in 1:n_indivs) "Man")
-      
-    }
-    
-    #=========================================================================#
-    # PARETO
-    #=========================================================================#
-    
-    if (distribution == "Pareto") {
-      
-      n_indivs = input$pareto_n_in_group
-      
-      incomes_man <- pmax(rpareto(n_indivs, input$pareto_min_slider[2], input$pareto_scale_men), 0)
-      incomes_woman <- pmax(rpareto(n_indivs, input$pareto_min_slider[1], input$pareto_scale_women), 0)
-      
-      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
-      group_man <- to_vec(for(i in 1:n_indivs) "Man")
-      
-    }
     
     
     #=========================================================================#
@@ -193,12 +115,7 @@ server <- function(input, output) {
       df <- data.frame(c(incomes_man, incomes_woman), c(incomes_man_sss, incomes_woman_sss), c(group_man, group_woman))
       colnames(df) <- c("Income", "Income_SSS", "Group")
     }
-    
-    # Otherwise don't bother
-    else {
-      df <- data.frame(c(incomes_man, incomes_woman), c(group_man, group_woman))
-      colnames(df) <- c("Income", "Group")
-    }
+
     
 
 
@@ -231,14 +148,10 @@ server <- function(input, output) {
     
     hist_max_x <- ceiling(max(df$Income)/5)*5
 
-    # Different bins depending on number of indivs
-    # If fixed intervals, okay to just have individual levels / capped at 0.25
-    if (distribution == "Fixed") {
-      bins <- seq(from=0, to=hist_max_x, by=min(max(input$Delta, 0.25),1))
-    }
+
     
     # RLN is annoying and weird, keep it separate for now
-    else if (distribution == "Random Log Normal" | input$distribution == "Siblings") {
+    if (distribution == "Random Log Normal" | input$distribution == "Siblings") {
       
       # FOR NOW, JUST DON'T BOTHER WITH THIS
       
@@ -454,7 +367,7 @@ server <- function(input, output) {
     
     if (distribution == "Siblings") {
       Gini_Table <- calc_sib_groub_gini(df)
-      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total, Within_SSS))
+      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Within_SSS))
       #print(df)
     }
     
