@@ -5,6 +5,10 @@ library(EnvStats)
 library(ggplot2)
 
 
+# setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
+# shinylive::export(appdir = "myapp", destdir = "docs")
+
+
 # Define UI for app that draws a histogram ----
 ui <- fluidPage(
   
@@ -16,91 +20,6 @@ ui <- fluidPage(
     
     # Sidebar panel for inputs ----
     sidebarPanel(
-      
-      # Select of income type
-      #selectInput(inputId = "distribution", label = h3("Income Distribution"), 
-                  #choices = list("Fixed", "Random Normal", "Pareto", "Random Log Normal", "Siblings"), 
-                  #selected = "Siblings"),
-      
-      
-      #=========================================================================#
-      # FIXED
-      #=========================================================================#
-      
-      conditionalPanel(condition = "input.distribution == 'Fixed'",
-        # Incomes
-        p("Income distribution based on a median/mean income, a number of individuals in each group, and the difference in income between two consecutive individuals."),
-        numericInput(inputId="fixed_n_in_group", label = h3("Number in each group"), value = 5),
-
-        sliderInput("fixed_mean_income_slider", label = h3("Mean Income"), min = 0, 
-                    max = 5, value = c(1, 2), step=0.25),
-        sliderInput(inputId = "income_step_slider", label = h3("Income Step"), min = 0, 
-                    max = 5, value = c(0.25, 0.5), step=0.25)
-
-      ),
-      
-      #=========================================================================#
-      # RANDOM NORMAL
-      #=========================================================================#
-      conditionalPanel(condition = "input.distribution == 'Random Normal'",
-        numericInput(inputId="rn_n_in_group", label = h3("Number in each group"), value = 500),
-        
-        sliderInput("rn_mean_income_slider", label = h3("Mean Income"), min = 0, 
-                    max = 100, value = c(25, 40), step=5),
-
-        fluidRow(
-          column(width = 6,
-                 numericInput("rn_var_men", label=h5("Variance - Men"), value=10)
-          ),
-          column(width = 6, 
-                 numericInput("rn_var_women", label=h5("Variance - Women"), value=5)
-          )
-        )
-      ),
-      
-      
-      #=========================================================================#
-      # PARETO
-      #=========================================================================#
-      
-      conditionalPanel(condition = "input.distribution == 'Pareto'",
-       numericInput(inputId="pareto_n_in_group", label = h3("Number in each group"), value = 50),
-       
-       sliderInput("pareto_min_slider", label = h3("Mean Income"), min = 0, 
-                   max = 100, value = c(25, 40), step=5),
-       
-       fluidRow(
-         column(width = 6,
-                numericInput("pareto_scale_men", label=h5("Scale - Men"), value=100)
-         ),
-         column(width = 6, 
-                numericInput("pareto_scale_women", label=h5("Scale - Women"), value=50)
-         )
-       )
-      ),
-      
-
-      #=========================================================================#
-      # LOG NORMAL
-      #=========================================================================#
-
-      
-      conditionalPanel(condition = "input.distribution == 'Random Log Normal'",
-       numericInput(inputId="rln_n_in_group", label = h3("Number in each group"), value = 50),
-       
-       sliderInput("rln_mean_income_slider", label = h3("Mean Income"), min = 0, 
-                   max = 100, value = c(20, 50), step=1),
-       
-       fluidRow(
-         column(width = 6,
-                numericInput("rln_var_men", label=h5("Variance - Men"), value=0.5)
-         ),
-         column(width = 6, 
-                numericInput("rln_var_women", label=h5("Variance - Women"), value=1)
-         )
-       )
-       #checkboxInput("checkbox", label = "Log Scale", value = FALSE),
-      ), 
       
       #=========================================================================#
       # SIBLINGS
