@@ -17,6 +17,11 @@ ui <- fluidPage(
     # Sidebar panel for inputs ----
     sidebarPanel(
       
+      # Select of income type
+      #selectInput(inputId = "distribution", label = h3("Income Distribution"), 
+      #choices = list("Fixed", "Random Normal", "Pareto", "Random Log Normal", "Siblings"), 
+      #selected = "Siblings"),
+      
       
       #=========================================================================#
       # SIBLINGS
@@ -71,22 +76,100 @@ server <- function(input, output) {
     distribution = "Siblings"
     
     #=========================================================================#
+    # FIXED
+    #=========================================================================#
+    
+    if (distribution == "Fixed") {
+      
+      n_indivs = input$fixed_n_in_group
+      
+      base_income_woman <- input$fixed_mean_income_slider[1]
+      base_income_man <- input$fixed_mean_income_slider[2]
+      
+      income_step_woman <- input$income_step_slider[1]
+      income_step_man <- input$income_step_slider[2]
+      n_indivs_step <- floor(n_indivs/2)
+      
+      incomes_woman <- to_vec(for(i in -n_indivs_step:n_indivs_step) max(base_income_woman + income_step_woman * i, 0))
+      incomes_man <- to_vec(for(i in -n_indivs_step:n_indivs_step) max(base_income_man + income_step_man * i, 0))
+      
+      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
+      group_man <- to_vec(for(i in 1:n_indivs) "Man")
+      
+      # Logic for handling even numbers - remove the base number
+      if (floor(n_indivs/2) == n_indivs/2) {
+        incomes_woman <- incomes_woman[-(n_indivs/2+1)]
+        incomes_man <- incomes_man[-(n_indivs/2+1)]
+        
+      }
+    }
+    
+    #=========================================================================#
+    # RANDOM NORMAL
+    #=========================================================================#
+    
+    if (distribution == "Random Normal") {
+      
+      n_indivs = input$rn_n_in_group
+      
+      
+      incomes_man <- pmax(rnorm(n_indivs, input$rn_mean_income_slider[2], input$rn_var_men), 0)
+      incomes_woman <- pmax(rnorm(n_indivs, input$rn_mean_income_slider[1], input$rn_var_women), 0)
+      
+      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
+      group_man <- to_vec(for(i in 1:n_indivs) "Man")
+      
+    }
+    
+    #=========================================================================#
+    # RANDOM LOG NORMAL
+    #=========================================================================#
+    
+    if (distribution == "Random Log Normal") {
+      
+      n_indivs = input$rln_n_in_group
+      
+      
+      incomes_man <- pmax(rlnorm(n_indivs, log(input$rln_mean_income_slider[2]), input$rln_var_men), 0)
+      incomes_woman <- pmax(rlnorm(n_indivs, log(input$rln_mean_income_slider[1]), input$rln_var_women), 0)
+      
+      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
+      group_man <- to_vec(for(i in 1:n_indivs) "Man")
+      
+    }
+    
+    #=========================================================================#
+    # PARETO
+    #=========================================================================#
+    
+    if (distribution == "Pareto") {
+      
+      n_indivs = input$pareto_n_in_group
+      
+      incomes_man <- pmax(rpareto(n_indivs, input$pareto_min_slider[2], input$pareto_scale_men), 0)
+      incomes_woman <- pmax(rpareto(n_indivs, input$pareto_min_slider[1], input$pareto_scale_women), 0)
+      
+      group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
+      group_man <- to_vec(for(i in 1:n_indivs) "Man")
+      
+    }
+    
+    
+    #=========================================================================#
     # SIBLINGS WITH RLN
     #=========================================================================#
     
     if (distribution == "Siblings") {
       
       n_indivs = input$sib_n_in_group
-      sib_phi_men = input$sib_phi_men
-      sib_phi_women = input$sib_phi_women
-      
+      sib_phi = 1 - input$sib_phi
       
       # Obtain parameters
       sib_RLN_mean_men = 10
       sib_RLN_mean_women = sib_RLN_mean_men - input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
       
-      sib_RLN_var_men = input$sib_var_income_slider
-      sib_RLN_var_women = sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
+      sib_RLN_var_men = input$sib_rln_var_men_test
+      sib_RLN_var_women = input$sib_rln_var_women_test #sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
       
       # Generate original incomes
       incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
@@ -101,8 +184,8 @@ server <- function(input, output) {
       incomes_woman_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
       
       # Combine the two to get the SSS income
-      incomes_man_sss = sib_phi_men * incomes_man_sss_random + (1-sib_phi_men) * incomes_man
-      incomes_woman_sss = sib_phi_women * incomes_woman_sss_random + (1-sib_phi_women) * incomes_woman
+      incomes_man_sss = sib_phi * incomes_man_sss_random + (1-sib_phi) * incomes_man
+      incomes_woman_sss = sib_phi * incomes_woman_sss_random + (1-sib_phi) * incomes_woman
       
       
     }
@@ -118,6 +201,8 @@ server <- function(input, output) {
       df <- data.frame(c(incomes_man, incomes_woman), c(group_man, group_woman))
       colnames(df) <- c("Income", "Group")
     }
+    
+    
     
     return(df)
   })
@@ -138,36 +223,74 @@ server <- function(input, output) {
     distribution = input$distribution
     distribution = "Siblings"
     
-    # Setup
-    df <- df %>%
-      pivot_longer(cols = starts_with("Income"),
-                   names_to = "Sibling",
-                   values_to = "Income")
+    if (distribution == "Siblings") {
+      df <- df %>%
+        pivot_longer(cols = starts_with("Income"),
+                     names_to = "Sibling",
+                     values_to = "Income")
+    }
+    
     
     hist_max_x <- ceiling(max(df$Income)/5)*5
     
-
-    max_income_men = ceiling(max(subset(df, Group == "Man")$Income)/5)*5
-    max_income_women = ceiling(max(subset(df, Group == "Woman")$Income)/5)*5
+    # Different bins depending on number of indivs
+    # If fixed intervals, okay to just have individual levels / capped at 0.25
+    if (distribution == "Fixed") {
+      bins <- seq(from=0, to=hist_max_x, by=min(max(input$Delta, 0.25),1))
+    }
+    
+    # RLN is annoying and weird, keep it separate for now
+    else if (distribution == "Random Log Normal" | input$distribution == "Siblings") {
+      
+      # FOR NOW, JUST DON'T BOTHER WITH THIS
+      
+      max_income_men = ceiling(max(subset(df, Group == "Man")$Income)/5)*5
+      max_income_women = ceiling(max(subset(df, Group == "Woman")$Income)/5)*5
+      
+      #      hist_max_x = min(max_income_men, max_income_women)
+      
+      rln_hist_break = 10^(floor(log10(min(max_income_men, max_income_women))))
+      bins <- seq(from=0, to=hist_max_x+5*rln_hist_break, by=rln_hist_break)
+      
+      
+      
+    }
+    
+    # For RN, makes more sense to group more
+    else {
+      bins <- seq(from=0, to=hist_max_x, by=1)
+      
+    }
     
     
-    rln_hist_break = 10^(floor(log10(min(max_income_men, max_income_women))))
-    bins <- seq(from=0, to=hist_max_x+5*rln_hist_break, by=rln_hist_break)
     
     freq = hist(df$Income, breaks=bins, include.lowest=TRUE, plot=FALSE)
     hist_max_y <- ceiling(max(freq$counts))
     
-
-    # Plotting
-    p1 <- hist(subset(df, Group == "Woman")$Income, breaks=bins)
-    p2 <- hist(subset(df, Group == "Man")$Income, breaks=bins)
     
-    plot(p1, xlim=c(0,hist_max_x), ylim=c(0,hist_max_y), col=rgb(1,0,0,1/4), xlab="Income", ylab="Count", xaxs="i", yaxs="i", main="Income Distribution")
-    plot(p2, xlim=c(0,hist_max_x), ylim=c(0,hist_max_y), col=rgb(0,0,1,1/4), add=T, xlab="Income", ylab="Count", xaxs="i", yaxs="i")
-    legend(x = "topright",         # Position
-           legend = c("Women", "Men"), # Legend texts
-           fill = c(2, 4))
+    if (distribution == "Random Log Normal") {
+      p1 <- hist(subset(df, Group == "Woman")$Income, breaks = 20)#, breaks=bins)
+      p2 <- hist(subset(df, Group == "Man")$Income, breaks=20)#, breaks=bins)
       
+      plot(p1, ylim=c(0,hist_max_y), col=rgb(1,0,0,1/4), xlab="Income", ylab="Count", xaxs="i", yaxs="i", main="Income Distribution")
+      plot(p2, ylim=c(0,hist_max_y), col=rgb(0,0,1,1/4), add=T, xlab="Income", ylab="Count", xaxs="i", yaxs="i")
+      legend(x = "topright",         # Position
+             legend = c("Women", "Men"), # Legend texts
+             fill = c(2, 4))
+    }
+    
+    
+    else {
+      p1 <- hist(subset(df, Group == "Woman")$Income, breaks=bins)
+      p2 <- hist(subset(df, Group == "Man")$Income, breaks=bins)
+      
+      plot(p1, xlim=c(0,hist_max_x), ylim=c(0,hist_max_y), col=rgb(1,0,0,1/4), xlab="Income", ylab="Count", xaxs="i", yaxs="i", main="Income Distribution")
+      plot(p2, xlim=c(0,hist_max_x), ylim=c(0,hist_max_y), col=rgb(0,0,1,1/4), add=T, xlab="Income", ylab="Count", xaxs="i", yaxs="i")
+      legend(x = "topright",         # Position
+             legend = c("Women", "Men"), # Legend texts
+             fill = c(2, 4))
+      
+    }
     
     
     
