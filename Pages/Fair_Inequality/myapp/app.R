@@ -3,10 +3,22 @@ library(comprehenr)
 library(tidyverse)
 library(EnvStats)
 library(ggplot2)
+library(cowplot)
 
 
 # setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
 # shinylive::export(appdir = "myapp", destdir = "docs")
+
+create_app = function() {
+  setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
+  shinylive::export(appdir = "myapp", destdir = "docs")
+}
+
+
+
+
+# Load the data
+df_preload_data = read.csv("C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/data/pregen_data.csv")
 
 
 # Define UI for app that draws a histogram ----
@@ -68,12 +80,10 @@ server <- function(input, output) {
   
 
   incomes_df <- reactive({
-
+    
     # For now, fix to siblings
     distribution = input$distribution
     distribution = "Siblings"
-    
-    
     
     #=========================================================================#
     # SIBLINGS WITH RLN
@@ -82,14 +92,16 @@ server <- function(input, output) {
     if (distribution == "Siblings") {
       
       n_indivs = input$sib_n_in_group
-      sib_phi = 1 - input$sib_phi
+      sib_phi_men = input$sib_phi_men
+      sib_phi_women = input$sib_phi_women
+      
       
       # Obtain parameters
       sib_RLN_mean_men = 10
       sib_RLN_mean_women = sib_RLN_mean_men - input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
-
-      sib_RLN_var_men = input$sib_rln_var_men_test
-      sib_RLN_var_women = input$sib_rln_var_women_test #sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
+      
+      sib_RLN_var_men = input$sib_var_income_slider
+      sib_RLN_var_women = sib_RLN_var_men + input$sib_var_income_diff_slider * sib_RLN_var_men / 100
       
       # Generate original incomes
       incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
@@ -98,14 +110,14 @@ server <- function(input, output) {
       group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
       group_man <- to_vec(for(i in 1:n_indivs) "Man")
       
-
+      
       # Generate random element of the SSS income
       incomes_man_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
       incomes_woman_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
       
       # Combine the two to get the SSS income
-      incomes_man_sss = sib_phi * incomes_man_sss_random + (1-sib_phi) * incomes_man
-      incomes_woman_sss = sib_phi * incomes_woman_sss_random + (1-sib_phi) * incomes_woman
+      incomes_man_sss = sib_phi_men * incomes_man_sss_random + (1-sib_phi_men) * incomes_man
+      incomes_woman_sss = sib_phi_women * incomes_woman_sss_random + (1-sib_phi_women) * incomes_woman
       
       
     }
@@ -115,10 +127,13 @@ server <- function(input, output) {
       df <- data.frame(c(incomes_man, incomes_woman), c(incomes_man_sss, incomes_woman_sss), c(group_man, group_woman))
       colnames(df) <- c("Income", "Income_SSS", "Group")
     }
-
     
-
-
+    # Otherwise don't bother
+    else {
+      df <- data.frame(c(incomes_man, incomes_woman), c(group_man, group_woman))
+      colnames(df) <- c("Income", "Group")
+    }
+    
     return(df)
   })
   
