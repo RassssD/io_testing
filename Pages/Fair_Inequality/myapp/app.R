@@ -20,69 +20,63 @@ create_app = function() {
 #=========================================================================#
 
 # Function for plotting the Gini
-# plot_gini = function(df_data, x_title = "Param", y_title = "Gini") {
-#   
-#   # step_param = 0.25
-#   #print(df_data)
-#   x_min = min(df_data$ValParam)
-#   x_max = max(df_data$ValParam)
-#   
-#   y_min = 0 # floor(min(df_data$Total) / step_param) * step_param
-#   y_max = 1 # min(ceiling(max(df_data$Total) / step_param) * step_param, 1)
-#   
-#   #print("test g before")
-#   # Plot
-#   plot = df_data %>% group_by(ValParam, Group) %>% mutate(Mean_Gini = mean(Total)) %>%
-#     ggplot(aes(x=ValParam, y = Mean_Gini, color=Group)) +
-#     #geom_line(size = 1) +
-#     geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
-#     theme_classic() +
-#     theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
-#           legend.position = "none",
-#           panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
-#           plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
-#           ) +
-#     scale_color_manual(values=c("black", "blue", "red")) +
-#     scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
-#     scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
-#     xlab(x_title) + ylab(y_title)
-#   #print("test g after")
-#   return(plot)
-# }
-# 
-# 
-# # Function for plotting the Share Fair
-# plot_SF = function(df_data, x_title = "Param", y_title = "% Fair") {
-#   #print(df_data)
-#   # step_param = 25
-#   #print("test SF before")
-#   x_min = min(df_data$ValParam)
-#   x_max = max(df_data$ValParam)
-#   
-#   y_min = 0 # floor(min(df_data$ShareFair) / step_param) * step_param
-#   y_max = 100 # min(ceiling(max(df_data$ShareFair) / step_param) * step_param, 100)
-#   
-# 
-#   # Plot
-#   plot = df_data %>% group_by(ValParam, Group) %>% mutate(Mean_SF = mean(ShareFair)) %>%
-#     ggplot(aes(x=ValParam, y = Mean_SF, color=Group)) +
-#     #geom_line(size = 1) +
-#     geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
-#     theme_classic() +
-#     theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
-#           legend.position = "none",
-#           panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
-#           plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
-#           ) +
-#     scale_color_manual(values=c("black", "blue", "red")) +
-#     scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
-#     scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
-#     xlab(x_title) + ylab(y_title)
-#   
-#   #print("test SF after")
-#   return(plot)
-# }
-# 
+plot_gini = function(df_data, x_title = "Param", y_title = "Gini") {
+  
+  step_param = 0.25
+  
+  x_min = min(df_data$ValParam)
+  x_max = max(df_data$ValParam)
+  
+  y_min = 0 # floor(min(df_data$Total) / step_param) * step_param
+  y_max = 1 # min(ceiling(max(df_data$Total) / step_param) * step_param, 1)
+  
+  
+  # Plot
+  df_data %>% group_by(ValParam, Group) %>% mutate(Mean_Gini = mean(Total)) %>%
+    ggplot(aes(x=ValParam, y = Mean_Gini, color=Group)) +
+    #geom_line(size = 1) +
+    geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
+    theme_classic() +
+    theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+          panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
+          plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
+    ) +
+    scale_color_manual(values=c("black", "blue", "red")) +
+    scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
+    scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
+    xlab(x_title) + ylab(y_title)
+}
+
+
+# Function for plotting the Share Fair
+plot_SF = function(df_data, x_title = "Param", y_title = "% Fair") {
+  
+  step_param = 25
+  
+  x_min = min(df_data$ValParam)
+  x_max = max(df_data$ValParam)
+  
+  y_min = 0 # floor(min(df_data$ShareFair) / step_param) * step_param
+  y_max = 100 # min(ceiling(max(df_data$ShareFair) / step_param) * step_param, 100)
+  
+  # Plot
+  df_data %>% group_by(ValParam, Group) %>% mutate(Mean_SF = mean(ShareFair)) %>%
+    ggplot(aes(x=ValParam, y = Mean_SF, color=Group)) +
+    #geom_line(size = 1) +
+    geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
+    theme_classic() +
+    theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+          panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
+          plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
+    ) +
+    scale_color_manual(values=c("black", "blue", "red")) +
+    scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
+    scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
+    xlab(x_title) + ylab(y_title)
+}
+
 
 
 # Get the plots, separate from the data generation
@@ -124,32 +118,28 @@ create_app = function() {
 # }
 
 
-# 
-# gen_plots_cowplot = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
-#   #print(c(val_phi, val_GG, val_var))
-#   plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
-#   plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "Phi", y_title = "% Fair")
-# 
-#   #print("test1")
-#   
-#   # GG
-#   
-#   plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
-#   #print("test1.2")
-#   plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
-#   #print("test2")
-#   # Var
-#   plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
-#   plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
-#   
-#   # all together
-#   #plots = c(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
-#   #print("test3")
-#   plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
-#                     ncol=3, nrow=2)
-#   
-#   return(plots)
-# }
+
+gen_plots_cowplot = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
+  
+  plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
+  plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "Phi", y_title = "% Fair")
+  
+  # GG
+  plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
+  plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
+  
+  # Var
+  plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
+  plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
+  
+  # all together
+  #plots = c(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
+  
+  plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
+                    ncol=3, nrow=2)
+  
+  return(plots)
+}
 
 
 
@@ -164,21 +154,17 @@ df_preload_data = read.csv("./data/pregen_data.csv")
 # Function for selecting the needed data
 # Specify the parameter to vary, 
 select_pregen_inc_data = function(df_pregen_data, n_select = 10, param_to_vary = "X", val_phi = -1, val_GG = -1, val_var = -1) {
-  #print("test select")
-  #print(c(val_phi, val_GG, val_var))
+  
   ## Filter the appropriate each time, rename the desired column to fit drawing functions
   # Phi is the wanted parameter
   if (val_phi == -1) {
-    #print("testphi")
     df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Var == val_var) %>% 
       mutate(ValParam = Phi) %>%
       select(-c(Phi, GG, Var))
-    
   }
   
   # GG is the wanted parameter
   if (val_GG == -1) {
-    #print("testGG")
     df_pregen_data_filtered = df_pregen_data %>% filter(Phi == val_phi, Var == val_var) %>% 
       mutate(ValParam = GG) %>%
       select(-c(Phi, GG, Var))
@@ -186,7 +172,6 @@ select_pregen_inc_data = function(df_pregen_data, n_select = 10, param_to_vary =
   
   # Var is the wanted parameter
   if (val_var == -1) {
-    #print("testvar")
     df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Phi == val_phi) %>% 
       mutate(ValParam = Var) %>%
       select(-c(Phi, GG, Var))
@@ -303,7 +288,6 @@ ui <- tagList(
                  #plotOutput(outputId = "param_plots", width="455px", height="500px"),
                  #imageOutput("params_plot"),
                  textOutput("text_test"),
-                 #imageOutput("testImage"),
                  "End"
                  
                  , width=8)
@@ -317,7 +301,7 @@ ui <- tagList(
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
   
-
+  
   incomes_df <- reactive({
     
     # For now, fix to siblings
@@ -341,10 +325,10 @@ server <- function(input, output) {
       
       sib_RLN_var_men = input$sib_var_income_slider
       sib_RLN_var_women = input$sib_var_income_slider
-  
+      
       
       #print(c(n_indivs, sib_phi_men, sib_phi_women, sib_RLN_mean_men, sib_RLN_mean_women, sib_RLN_var_men, sib_RLN_var_women))
-          
+      
       # Generate original incomes
       incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
       incomes_woman <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
@@ -380,20 +364,6 @@ server <- function(input, output) {
   })
   
   
-  # Plot grid
-  # param_plot_grid = reactive({
-  # 
-  #   plots = gen_plots_cowplot(df_preload_data, 
-  #                     val_phi = input$params_phi, 
-  #                     val_GG = input$params_GG, 
-  #                     val_var = input$params_var_inc)
-  # 
-  #   save_plot(filename = "test2.png", plot = plots)
-  #   
-  #   
-  #   return()
-  # })
-  
   #=========================================================================#
   # OUTPUT PLOTS
   #=========================================================================#
@@ -415,11 +385,11 @@ server <- function(input, output) {
                      names_to = "Sibling",
                      values_to = "Income")
     }
-
+    
     
     hist_max_x <- ceiling(max(df$Income)/5)*5
-
-
+    
+    
     
     # RLN is annoying and weird, keep it separate for now
     if (distribution == "Random Log Normal" | input$distribution == "Siblings") {
@@ -429,26 +399,26 @@ server <- function(input, output) {
       max_income_men = ceiling(max(subset(df, Group == "Man")$Income)/5)*5
       max_income_women = ceiling(max(subset(df, Group == "Woman")$Income)/5)*5
       
-#      hist_max_x = min(max_income_men, max_income_women)
+      #      hist_max_x = min(max_income_men, max_income_women)
       
       rln_hist_break = 10^(floor(log10(min(max_income_men, max_income_women))))
       bins <- seq(from=0, to=hist_max_x+5*rln_hist_break, by=rln_hist_break)
       
       
-
+      
     }
     
     # For RN, makes more sense to group more
     else {
       bins <- seq(from=0, to=hist_max_x, by=1)
-
+      
     }
     
     
     
     freq = hist(df$Income, breaks=bins, include.lowest=TRUE, plot=FALSE)
     hist_max_y <- ceiling(max(freq$counts))
-
+    
     
     if (distribution == "Random Log Normal") {
       p1 <- hist(subset(df, Group == "Woman")$Income, breaks = 20)#, breaks=bins)
@@ -460,8 +430,8 @@ server <- function(input, output) {
              legend = c("Women", "Men"), # Legend texts
              fill = c(2, 4))
     }
-
-
+    
+    
     else {
       p1 <- hist(subset(df, Group == "Woman")$Income, breaks=bins)
       p2 <- hist(subset(df, Group == "Man")$Income, breaks=bins)
@@ -473,7 +443,7 @@ server <- function(input, output) {
              fill = c(2, 4))
       
     }
-
+    
     
     
   })
@@ -486,14 +456,14 @@ server <- function(input, output) {
     df <- incomes_df()
     
     n_indivs <- nrow(df)/ 2
-
+    
     #n_indivs <- ifelse(input$distribution == "Fixed", input$fixed_n_in_group, input$rn_n_in_group)
-
+    
     df <- df[order(df$Group, df$Income),]
-
+    
     df <- df %>% group_by(Group) %>% mutate(Cum_Income_Share = cumsum(Income) / sum(Income)) %>% ungroup()
     
-
+    
     df_draw_men <- df %>% filter(Group == "Man")
     cum_inc_share_men <- c(0) %>% append(df_draw_men$Cum_Income_Share)
     
@@ -506,14 +476,14 @@ server <- function(input, output) {
     
     steps = seq(0, 1, by=1/n_indivs)
     steps_all = seq(0, 1, by=0.5/n_indivs)
-
-
+    
+    
     plot(x=steps, y=steps, 
          type="l", col=1, lty=2, lwd=2,
          xlab="Cumulative Population", ylab="Cumulative Income", main="Lorenz Curves",
          xlim = c(0,1), ylim = c(0,1), xaxs="i", yaxs="i",
          asp=1)
-
+    
     lines(x=steps, y=cum_inc_share_women, col=2, type="l", lwd=2)
     lines(x=steps, y=cum_inc_share_men, col=4, type="l", lwd=2)
     lines(x=steps_all, y=cum_inc_share_all, col=1, type="l", lwd=2)
@@ -522,7 +492,7 @@ server <- function(input, output) {
            lty = c(2, 1, 1, 1),
            col = c(1, 2, 4, 1),
            lwd = 2)
-
+    
     
   })
   
@@ -653,15 +623,6 @@ server <- function(input, output) {
   })
   
   output$text_test = renderText(paste(nrow(df_selected)))
-  
-  
-  # output$testImage = renderImage({
-  #   param_plot_grid()
-  #   #save_plot(filename = "./images/test2.png", plot = param_plot_grid())
-  #   list(src = "./test2.png",
-  #        width=600,
-  #        height=400)
-  # }, deleteFile = FALSE)
   
 }
 
