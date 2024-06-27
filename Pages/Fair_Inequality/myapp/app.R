@@ -3,7 +3,7 @@ library(comprehenr)
 library(tidyverse)
 library(EnvStats)
 library(ggplot2)
-library(cowplot)
+#library(cowplot)
 
 
 # setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
