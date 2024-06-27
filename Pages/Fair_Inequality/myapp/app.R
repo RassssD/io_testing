@@ -303,7 +303,7 @@ ui <- tagList(
                  #plotOutput(outputId = "param_plots", width="455px", height="500px"),
                  #imageOutput("params_plot"),
                  textOutput("text_test"),
-                 imageOutput("testImage"),
+                 #imageOutput("testImage"),
                  "End"
                  
                  , width=8)
@@ -381,18 +381,18 @@ server <- function(input, output) {
   
   
   # Plot grid
-  param_plot_grid = reactive({
-
-    plots = gen_plots_cowplot(df_preload_data, 
-                      val_phi = input$params_phi, 
-                      val_GG = input$params_GG, 
-                      val_var = input$params_var_inc)
-
-    save_plot(filename = "test2.png", plot = plots)
-    
-    
-    return()
-  })
+  # param_plot_grid = reactive({
+  # 
+  #   plots = gen_plots_cowplot(df_preload_data, 
+  #                     val_phi = input$params_phi, 
+  #                     val_GG = input$params_GG, 
+  #                     val_var = input$params_var_inc)
+  # 
+  #   save_plot(filename = "test2.png", plot = plots)
+  #   
+  #   
+  #   return()
+  # })
   
   #=========================================================================#
   # OUTPUT PLOTS
@@ -655,13 +655,13 @@ server <- function(input, output) {
   output$text_test = renderText(paste(nrow(df_selected)))
   
   
-  output$testImage = renderImage({
-    param_plot_grid()
-    #save_plot(filename = "./images/test2.png", plot = param_plot_grid())
-    list(src = "./test2.png",
-         width=600,
-         height=400)
-  }, deleteFile = FALSE)
+  # output$testImage = renderImage({
+  #   param_plot_grid()
+  #   #save_plot(filename = "./images/test2.png", plot = param_plot_grid())
+  #   list(src = "./test2.png",
+  #        width=600,
+  #        height=400)
+  # }, deleteFile = FALSE)
   
 }
 
