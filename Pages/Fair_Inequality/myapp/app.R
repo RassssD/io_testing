@@ -18,7 +18,7 @@ create_app = function() {
 
 
 # Load the data
-#df_preload_data = read.csv("C:/Programming/GitHub/Wendy-RA/Working/Pages/Fair_Inequality/myapp/data/pregen_data.csv")
+df_preload_data = read.csv("./data/pregen_data.csv")
 
 
 # Define UI for app that draws a histogram ----
