@@ -3,7 +3,7 @@ library(comprehenr)
 library(tidyverse)
 library(EnvStats)
 library(ggplot2)
-#library(cowplot)
+library(cowplot)
 
 
 # setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
@@ -18,7 +18,7 @@ create_app = function() {
 
 
 # Load the data
-#df_preload_data = read.csv("./data/pregen_data.csv")
+df_preload_data = read.csv("./data/pregen_data.csv")
 
 
 # Define UI for app that draws a histogram ----
