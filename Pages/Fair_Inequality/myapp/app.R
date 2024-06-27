@@ -151,10 +151,46 @@ gen_plots_cowplot = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1,
 df_preload_data = read.csv("./data/pregen_data.csv")
 
 
+# Function for selecting the needed data
+# Specify the parameter to vary, 
+select_pregen_inc_data = function(df_pregen_data, n_select = 10, param_to_vary = "X", val_phi = -1, val_GG = -1, val_var = -1) {
+  
+  ## Filter the appropriate each time, rename the desired column to fit drawing functions
+  # Phi is the wanted parameter
+  if (val_phi == -1) {
+    df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Var == val_var) %>% 
+      mutate(ValParam = Phi) %>%
+      select(-c(Phi, GG, Var))
+  }
+  
+  # GG is the wanted parameter
+  if (val_GG == -1) {
+    df_pregen_data_filtered = df_pregen_data %>% filter(Phi == val_phi, Var == val_var) %>% 
+      mutate(ValParam = GG) %>%
+      select(-c(Phi, GG, Var))
+  }
+  
+  # Var is the wanted parameter
+  if (val_var == -1) {
+    df_pregen_data_filtered = df_pregen_data %>% filter(GG == val_GG, Phi == val_phi) %>% 
+      mutate(ValParam = Var) %>%
+      select(-c(Phi, GG, Var))
+  }
+  
+  
+  # Draw a number of observations to create fake randomness
+  # Need to figure this out, but it mostly works
+  #n_max = df_pregen_data_filtered %>% length()
+  #n_select = min(n_max, n_select)
+  
+  #df_pregen_data_sampled = df_pregen_data_filtered[sample(nrow(df_pregen_data_filtered), n_select), ]
+  
+  return(df_pregen_data_filtered)
+  
+}
 
 
-
-
+df_selected = select_pregen_inc_data(df_preload_data, n_select = 10, param_to_vary = "Phi", val_GG = 0.2, val_var = 1)
 
 
 #=========================================================================#
@@ -251,6 +287,7 @@ ui <- tagList(
                  
                  #plotOutput(outputId = "param_plots", width="455px", height="500px"),
                  #imageOutput("params_plot"),
+                 textOutput("text_test"),
                  "End"
                  
                  , width=8)
@@ -583,8 +620,9 @@ server <- function(input, output) {
     return(Gini_Table)
     
     
-  }
-)
+  })
+  
+  output$text_test = renderText(paste(nrow(df_selected)))
   
 }
 
