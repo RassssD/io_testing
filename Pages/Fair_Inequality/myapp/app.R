@@ -41,7 +41,7 @@ ui <- tagList(
                  
                  # SIBLINGS
                  
-                 conditionalPanel(condition = "'1' = '1'",#"input.distribution == 'Siblings'",
+                 conditionalPanel(condition = "true == true",#"input.distribution == 'Siblings'",
                                   numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
                                   
                                   h4("Incomes are generated as follows:"),
