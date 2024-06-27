@@ -22,55 +22,99 @@ df_preload_data = read.csv("./data/pregen_data.csv")
 
 
 # Define UI for app that draws a histogram ----
-ui <- fluidPage(
+ui <- tagList(
   
   # App title ----
   titlePanel("Analysing Fair Inequality"),
   
-  # Sidebar layout with input and output definitions ----
-  sidebarLayout(
+  navbarPage(
+    "Page",
+    tabPanel("Main",
+             
+             # Sidebar layout with input and output definitions ----
+             sidebarLayout(
+               
+               #=========================================================================#
+               # INPUT
+               #=========================================================================#
+               sidebarPanel(
+                 
+                 # SIBLINGS
+                 
+                 conditionalPanel(condition = TRUE,#"input.distribution == 'Siblings'",
+                                  numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
+                                  
+                                  h4("Incomes are generated as follows:"),
+                                  
+                                  sliderInput("sib_phi_men", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, men"), min = 0, 
+                                              max = 1, value = 0.6, step=0.05),
+                                  # sliderInput("sib_phi_women", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, women"), min = 0, 
+                                  #             max = 1, value = 0.6, step=0.05),
+                                  
+                                  sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = -100, 
+                                              max = 100, value = 25, step=5),
+                                  sliderInput("sib_var_income_slider", HTML("Variance (men)"), min = 0, 
+                                              max = 5, value = 1, step=0.25),
+                                  # sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, 
+                                  #             max = 100, value = -25, step=25)
+                                  
+                 )
+                 
+                 , width = 4),
+               
+               #=========================================================================#
+               # OUTPUT
+               #=========================================================================#
+               mainPanel(
+                 
+                 #plotOutput(outputId = "distPlot"),
+                 #fluidRow(column(width=6, plotOutput(outputId = "GiniPlot")), column(width=3, tableOutput(outputId = "GiniTable")))
+                 h3("Lorenz Curves"),
+                 plotOutput(outputId = "GiniPlot", width="455px", height="500px"),
+                 h3("Gini Coefficient"),
+                 tableOutput(outputId = "GiniTable")
+                 
+                 , width=8)
+             )
+    ),
     
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-      
-      #=========================================================================#
-      # SIBLINGS
-      #=========================================================================#
-      
-      conditionalPanel(condition = "'1' == '1'",#"input.distribution == 'Siblings'",
-       numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
-       
-       sliderInput("sib_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
-                   max = 1, value = 0.6, step=0.05),
-       
-       sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = 0, 
-                   max = 100, value = 25, step=5),
-       #sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, max = 100, value = -30, step=5),
-       fluidRow(
-         column(width = 6,
-                numericInput("sib_rln_var_men", label=h5("Variance - Men"), value=1)
-         ),
-         column(width = 6, 
-                numericInput("sib_rln_var_women", label=h5("Variance - Women"), value=1)
-         )
-       )
-       
-      )
-      
-    , width = 4),
-    
-    # Main panel for displaying outputs ----
-    mainPanel(
-      
-      #plotOutput(outputId = "distPlot"),
-      #fluidRow(column(width=6, plotOutput(outputId = "GiniPlot")), column(width=3, tableOutput(outputId = "GiniTable")))
-      plotOutput(outputId = "GiniPlot", width="455px", height="500px"),
-      tags$h3("Gini Coefficient"),
-      tableOutput(outputId = "GiniTable")
-      
-
-      
-    , width=8)
+    tabPanel("Secondary", 
+             
+             # Sidebar layout with input and output definitions ----
+             sidebarLayout(
+               
+               #=========================================================================#
+               # INPUT
+               #=========================================================================#
+               sidebarPanel(
+                 
+                 # SIBLINGS
+                 
+                 conditionalPanel(condition = TRUE,#"input.distribution == 'Siblings'",
+                                  sliderInput("params_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, men"), min = 0, 
+                                              max = 1, value = 0.6, step=0.05),
+                                  sliderInput("params_GG", HTML("Unfair Inequality: Gender Gap (%)"), min = -1, 
+                                              max = 1, value = -0.2, step=0.05),
+                                  sliderInput("params_var_inc", HTML("Variance"), min = 0, 
+                                              max = 2, value = 1, step=0.05),
+                                  
+                 )
+                 
+                 , width = 4),
+               
+               #=========================================================================#
+               # OUTPUT
+               #=========================================================================#
+               mainPanel(
+                 
+                 #plotOutput(outputId = "param_plots", width="455px", height="500px"),
+                 #imageOutput("params_plot"),
+                 "End"
+                 
+                 , width=8)
+             )
+             
+    )
   )
 )
 
@@ -92,17 +136,19 @@ server <- function(input, output) {
     if (distribution == "Siblings") {
       
       n_indivs = input$sib_n_in_group
-      sib_phi_men = input$sib_phi
-      sib_phi_women = input$sib_phi
+      sib_phi_men = input$sib_phi_men
+      sib_phi_women = input$sib_phi_men
       
       
       # Obtain parameters
       sib_RLN_mean_men = 10
-      sib_RLN_mean_women = sib_RLN_mean_men - input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
+      sib_RLN_mean_women = sib_RLN_mean_men + input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
       
-      sib_RLN_var_men = input$sib_rln_var_men
-      sib_RLN_var_women = input$sib_rln_var_women
+      sib_RLN_var_men = input$sib_var_income_slider
+      sib_RLN_var_women = input$sib_var_income_slider
   
+      
+      #print(c(n_indivs, sib_phi_men, sib_phi_women, sib_RLN_mean_men, sib_RLN_mean_women, sib_RLN_var_men, sib_RLN_var_women))
           
       # Generate original incomes
       incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
