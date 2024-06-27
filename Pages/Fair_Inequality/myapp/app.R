@@ -90,7 +90,7 @@ ui <- tagList(
                  
                  # SIBLINGS
                  
-                 conditionalPanel(condition = TRUE,#"input.distribution == 'Siblings'",
+                 conditionalPanel(condition = "'1' == '1'",#"input.distribution == 'Siblings'",
                                   sliderInput("params_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, men"), min = 0, 
                                               max = 1, value = 0.6, step=0.05),
                                   sliderInput("params_GG", HTML("Unfair Inequality: Gender Gap (%)"), min = -1, 
