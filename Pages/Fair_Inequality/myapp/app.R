@@ -15,13 +15,155 @@ create_app = function() {
 }
 
 
+#=========================================================================#
+# PLOTS
+#=========================================================================#
 
+# Function for plotting the Gini
+plot_gini = function(df_data, x_title = "Param", y_title = "Gini") {
+  
+  step_param = 0.25
+  
+  x_min = min(df_data$ValParam)
+  x_max = max(df_data$ValParam)
+  
+  y_min = 0 # floor(min(df_data$Total) / step_param) * step_param
+  y_max = 1 # min(ceiling(max(df_data$Total) / step_param) * step_param, 1)
+  
+  
+  # Plot
+  df_data %>% group_by(ValParam, Group) %>% mutate(Mean_Gini = mean(Total)) %>%
+    ggplot(aes(x=ValParam, y = Mean_Gini, color=Group)) +
+    #geom_line(size = 1) +
+    geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
+    theme_classic() +
+    theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+          panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
+          plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
+    ) +
+    scale_color_manual(values=c("black", "blue", "red")) +
+    scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
+    scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
+    xlab(x_title) + ylab(y_title)
+}
+
+
+# Function for plotting the Share Fair
+plot_SF = function(df_data, x_title = "Param", y_title = "% Fair") {
+  
+  step_param = 25
+  
+  x_min = min(df_data$ValParam)
+  x_max = max(df_data$ValParam)
+  
+  y_min = 0 # floor(min(df_data$ShareFair) / step_param) * step_param
+  y_max = 100 # min(ceiling(max(df_data$ShareFair) / step_param) * step_param, 100)
+  
+  # Plot
+  df_data %>% group_by(ValParam, Group) %>% mutate(Mean_SF = mean(ShareFair)) %>%
+    ggplot(aes(x=ValParam, y = Mean_SF, color=Group)) +
+    #geom_line(size = 1) +
+    geom_smooth(size = 1, se=FALSE) + #, formula = y ~ x + x^2 + x^3) +
+    theme_classic() +
+    theme(title = element_text(size = 15), plot.title = element_text(hjust = 0.5),
+          legend.position = "none",
+          panel.grid.major = element_line(color = "grey",size = 0.5,linetype = 2),
+          plot.margin=unit(c(0.1,0.1,0.1,0.1),"cm")
+    ) +
+    scale_color_manual(values=c("black", "blue", "red")) +
+    scale_x_continuous(limits=c(x_min, x_max), expand = c(0,0)) +
+    scale_y_continuous(limits=c(y_min,y_max), expand = c(0,0)) +
+    xlab(x_title) + ylab(y_title)
+}
+
+
+
+# Get the plots, separate from the data generation
+# gen_plots = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
+#   
+#   plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
+#   plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "φ", y_title = "% Fair")
+#   
+#   # GG
+#   plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
+#   plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
+#   
+#   # Var
+#   plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
+#   plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
+#   
+#   
+#   # Direct grid
+#   plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
+#                     ncol=3, nrow=2)
+#   
+#   # Workaround
+#   # list_plots = list(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
+#   # 
+#   # for (i in 1:6) {
+#   #   ggsave(filename = sprintf("./images/param_plots_%s.png", i), plot = list_plots[[i]],
+#   #          width = 4, height = 4)
+#   # }
+#   # 
+#   # 
+#   # 
+#   # rl = lapply(sprintf("./images/param_plots_%s.png", 1:6), png::readPNG)
+#   # gl = lapply(rl, grid::rasterGrob)
+#   # grid_plot = gridExtra::arrangeGrob(grobs=gl, nrow=2, ncol=3)
+#   # 
+#   # ggsave(filename = "./images/param_plots_new.png", plot = grid_plot)
+#   
+#   return(plots)
+# }
+
+
+
+gen_plots_cowplot = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
+  
+  plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
+  plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "Phi", y_title = "% Fair")
+  
+  # GG
+  plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
+  plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
+  
+  # Var
+  plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
+  plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
+  
+  # all together
+  #plots = c(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
+  
+  plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
+                    ncol=3, nrow=2)
+  
+  return(plots)
+}
+
+
+
+#=========================================================================#
+# DATA
+#=========================================================================#
 
 # Load the data
 df_preload_data = read.csv("./data/pregen_data.csv")
 
 
-# Define UI for app that draws a histogram ----
+
+
+
+
+
+
+#=========================================================================#
+#=========================================================================#
+# ACTUAL WEB CODE
+#=========================================================================#
+#=========================================================================#
+
+# UI
 ui <- tagList(
   
   # App title ----
