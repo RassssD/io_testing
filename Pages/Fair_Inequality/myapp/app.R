@@ -161,7 +161,7 @@ ui <- tagList(
   
   # App title ----
   titlePanel("Analysing Fair Inequality"),
-  
+  withMathJax(),
   navbarPage(
     "Page",
     tabPanel("Main",
@@ -202,9 +202,25 @@ ui <- tagList(
                  
                  #plotOutput(outputId = "distPlot"),
                  #fluidRow(column(width=6, plotOutput(outputId = "GiniPlot")), column(width=3, tableOutput(outputId = "GiniTable")))
+                 
+                 h3("Data Generation"),
+                 helpText('For each gender \\( g \\in \\{M,F\\} \\), and each sibling pair \\( i=1, \\dots, N \\), take two log-normally distributed variables, \\( X_{gi}^{(1)}, X_{gi}^{(2)} \\), with mean \\( \\mu_{g} \\) and variance \\( \\sigma_{g}^{2} \\). For gender \\(g\\), the family advantage is \\(1-\\varphi_{g}.\\)'),
+                 helpText("Let \\( y_{gi}^{(1)}, y_{gi}^{(2)} \\) denote the log incomes of siblings 1 and 2 of a given pair \\( i \\) and a given gender \\( g \\)."),
+                 helpText('Then \\( y_{gi}^{(1)} = X_{gi}^{(1)} \\) and \\( y_{gi}^{(2)} = \\varphi_{g} \\times X_{gi}^{(2)} + (1 - \\varphi_{g}) \\times X_{gi}^{(1)} \\).
+'),
+                 
+                 
+                 
                  h3("Lorenz Curves"),
                  plotOutput(outputId = "GiniPlot", width="455px", height="500px"),
+                 
+                 
                  h3("Gini Coefficient"),
+                 
+                 helpText('For each group \\( k \\in \\{p,f\\} \\) the Gini coefficient is: \\( G^{k}= \\displaystyle\\frac{\\Delta^{k}}{N^{k}} \\frac{1}{\\underline{y}} \\frac{1}{2} \\).'),
+                 helpText('Where \\( \\Delta^{k} = \\sum_{i=j+1}^{n} \\sum_{j=1}^{n-1} |y_{i}-y_{j}| s_{ij}^{k} \\), such that \\( s_{ij}^{k}=1 \\) iff \\( i \\) and \\( j \\) are in the same group \\( k \\), and 0 otherwise. Also, \\( N^{p} = \\frac{n(n-1)}{2}, N^{f} = \\frac{n}{2} \\).'),
+                 helpText('The share of fair inequality is defined as \\( \\cfrac{G^{f}}{G^{p}} \\).'),
+                 
                  tableOutput(outputId = "GiniTable")
                  
                  , width=8)
@@ -239,7 +255,7 @@ ui <- tagList(
                # OUTPUT
                #=========================================================================#
                mainPanel(
-                 
+                 withMathJax(),
                  plotOutput("param_plot", width="600px", height="400px")
                  
                  , width=8)
@@ -602,6 +618,16 @@ server <- function(input, output) {
     gen_plots_cowplot(df_preload_data, input$params_phi, input$params_GG, input$params_var_inc)
     
   })
+  
+  
+  # Texts
+  
+  # Income generation
+  # output$inc_gen = renderUI({
+  #   withMathJax(
+  # 
+  # })
+  
   
   
 }
