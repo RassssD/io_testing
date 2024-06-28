@@ -287,6 +287,7 @@ ui <- tagList(
                  
                  #plotOutput(outputId = "param_plots", width="455px", height="500px"),
                  #imageOutput("params_plot"),
+                 plotOutput("param_plot"),
                  textOutput("text_test"),
                  "End"
                  
@@ -635,7 +636,22 @@ server <- function(input, output) {
     
   })
   
+  
+  
+  # Secondary tab
+  
+  # For testing
   output$text_test = renderText(selected_df())
+  
+  
+  # Parameter plot
+  
+  output$param_plot = renderPlot({
+    
+    gen_plots_cowplot(df_preload_data, input$params_phi, input$params_GG, input$params_var_inc)
+    
+  })
+  
   
 }
 
