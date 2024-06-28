@@ -301,7 +301,11 @@ ui <- tagList(
 # Define server logic required to draw a histogram ----
 server <- function(input, output) {
   
-
+  #=========================================================================#
+  # REACTIVE HELPER FUNCTIONS
+  #=========================================================================#
+  
+  # generate random incomes df
   incomes_df <- reactive({
     
     # For now, fix to siblings
@@ -361,6 +365,21 @@ server <- function(input, output) {
     }
     
     return(df)
+  })
+  
+  
+  # Testing
+  selected_df = reactive({
+    #df_select_phi = select_pregen_inc_data(df_preload_data, n_select = 10, param_to_vary = "Phi", val_GG = input$params_GG, val_var = input$params_var_inc)
+    #df_select_gg = select_pregen_inc_data(df_preload_data, n_select = 10, param_to_vary = "GG", val_phi = input$params_phi, val_var = input$params_var_inc)
+    #df_select_var = select_pregen_inc_data(df_preload_data, n_select = 10, param_to_vary = "Var", val_GG = input$params_GG, val_phi = input$params_phi)
+    
+    # print(c(input$params_phi, input$params_GG, input$params_var_inc))
+    # print(df_select_phi)
+    
+    test_string = sprintf("Test %s, %s, %s", input$params_phi, input$params_GG, input$params_var_inc)
+    
+    return(test_string)
   })
   
   
@@ -622,7 +641,7 @@ server <- function(input, output) {
     
   })
   
-  output$text_test = renderText(paste(nrow(df_selected)))
+  output$text_test = renderText(selected_df())
   
 }
 
