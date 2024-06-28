@@ -164,7 +164,7 @@ ui <- tagList(
   withMathJax(),
   navbarPage(
     "Page",
-    tabPanel("Main",
+    tabPanel("Total Effect",
              
              # Sidebar layout with input and output definitions ----
              sidebarLayout(
@@ -202,12 +202,7 @@ ui <- tagList(
                  
                  #plotOutput(outputId = "distPlot"),
                  #fluidRow(column(width=6, plotOutput(outputId = "GiniPlot")), column(width=3, tableOutput(outputId = "GiniTable")))
-                 
-                 h3("Data Generation"),
-                 helpText('For each gender \\( g \\in \\{M,F\\} \\), and each sibling pair \\( i=1, \\dots, N \\), take two log-normally distributed variables, \\( X_{gi}^{(1)}, X_{gi}^{(2)} \\), with mean \\( \\mu_{g} \\) and variance \\( \\sigma_{g}^{2} \\). For gender \\(g\\), the family advantage is \\(1-\\varphi_{g}.\\)'),
-                 helpText("Let \\( y_{gi}^{(1)}, y_{gi}^{(2)} \\) denote the log incomes of siblings 1 and 2 of a given pair \\( i \\) and a given gender \\( g \\)."),
-                 helpText('Then \\( y_{gi}^{(1)} = X_{gi}^{(1)} \\) and \\( y_{gi}^{(2)} = \\varphi_{g} \\times X_{gi}^{(2)} + (1 - \\varphi_{g}) \\times X_{gi}^{(1)} \\).
-'),
+                 h6('This page displays Lorenz curves, Gini coefficients, and the share of total inequality considered "fair" for each subgroup of the population generated on the basis of the chosen parameters.'),
                  
                  
                  
@@ -217,17 +212,25 @@ ui <- tagList(
                  
                  h3("Gini Coefficient"),
                  
+                 tableOutput(outputId = "GiniTable"),
+                 
+                 
+                 h3("Data Generation"),
+                 helpText('For each gender \\( g \\in \\{M,F\\} \\), and each sibling pair \\( i=1, \\dots, N \\), take two log-normally distributed variables, \\( X_{gi}^{(1)}, X_{gi}^{(2)} \\), with mean \\( \\mu_{g} \\) and variance \\( \\sigma_{g}^{2} \\). For gender \\(g\\), the family advantage is \\(1-\\varphi_{g}.\\)'),
+                 helpText("Let \\( y_{gi}^{(1)}, y_{gi}^{(2)} \\) denote the log incomes of siblings 1 and 2 of a given pair \\( i \\) and a given gender \\( g \\)."),
+                 helpText('Then \\( y_{gi}^{(1)} = X_{gi}^{(1)} \\) and \\( y_{gi}^{(2)} = \\varphi_{g} \\times X_{gi}^{(2)} + (1 - \\varphi_{g}) \\times X_{gi}^{(1)} \\).
+'),
+                 
+                 h3("Gini Calculation"),
                  helpText('For each group \\( k \\in \\{p,f\\} \\) the Gini coefficient is: \\( G^{k}= \\displaystyle\\frac{\\Delta^{k}}{N^{k}} \\frac{1}{\\underline{y}} \\frac{1}{2} \\).'),
                  helpText('Where \\( \\Delta^{k} = \\sum_{i=j+1}^{n} \\sum_{j=1}^{n-1} |y_{i}-y_{j}| s_{ij}^{k} \\), such that \\( s_{ij}^{k}=1 \\) iff \\( i \\) and \\( j \\) are in the same group \\( k \\), and 0 otherwise. Also, \\( N^{p} = \\frac{n(n-1)}{2}, N^{f} = \\frac{n}{2} \\).'),
                  helpText('The share of fair inequality is defined as \\( \\cfrac{G^{f}}{G^{p}} \\).'),
-                 
-                 tableOutput(outputId = "GiniTable")
                  
                  , width=8)
              )
     ),
     
-    tabPanel("Secondary", 
+    tabPanel("Individual Effects", 
              
              # Sidebar layout with input and output definitions ----
              sidebarLayout(
@@ -255,7 +258,11 @@ ui <- tagList(
                # OUTPUT
                #=========================================================================#
                mainPanel(
-                 withMathJax(),
+                 h6('This page isolates the effect of individual parameters on the Gini coefficient and the share of "fair" inequality within each subgroup.
+Each of the graph below shows the effect of varying one parameter, while holding the other 2 constant at the currently chosen values. '),
+                 h6('Example: In the default case, the first column displays the Gini and Share of fair inequality for different values of \\( \\phi \\), given \\( GG = -0.2, \\sigma^{2} = 1 \\). The second column displays the two amounts for different gender gap values, given \\( 1-\\varphi = 0.6, \\sigma^{2} = 1 \\), etc.
+'),
+                 h3("Parameter Plots"),
                  plotOutput("param_plot", width="600px", height="400px")
                  
                  , width=8)
