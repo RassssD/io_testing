@@ -6,9 +6,6 @@ library(ggplot2)
 library(cowplot)
 
 
-# setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
-# shinylive::export(appdir = "myapp", destdir = "docs")
-
 create_app = function() {
   setwd("C:/Programming/GitHub/io_testing/Pages/Fair_Inequality")
   shinylive::export(appdir = "myapp", destdir = "docs")
@@ -78,47 +75,7 @@ plot_SF = function(df_data, x_title = "Param", y_title = "% Fair") {
 }
 
 
-
-# Get the plots, separate from the data generation
-# gen_plots = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
-#   
-#   plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
-#   plot_SF_phi = plot_SF(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "φ", y_title = "% Fair")
-#   
-#   # GG
-#   plot_gini_GG = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "", y_title = "")
-#   plot_SF_GG = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_var = val_var, n_select = n_select), x_title = "GG", y_title = "")
-#   
-#   # Var
-#   plot_gini_var = plot_gini(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "", y_title = "")
-#   plot_SF_var = plot_SF(select_pregen_inc_data(df_data, val_phi = val_phi, val_GG = val_GG, n_select = n_select), x_title = "Var", y_title = "")
-#   
-#   
-#   # Direct grid
-#   plots = plot_grid(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var, 
-#                     ncol=3, nrow=2)
-#   
-#   # Workaround
-#   # list_plots = list(plot_gini_phi, plot_gini_GG, plot_gini_var, plot_SF_phi, plot_SF_GG, plot_SF_var)
-#   # 
-#   # for (i in 1:6) {
-#   #   ggsave(filename = sprintf("./images/param_plots_%s.png", i), plot = list_plots[[i]],
-#   #          width = 4, height = 4)
-#   # }
-#   # 
-#   # 
-#   # 
-#   # rl = lapply(sprintf("./images/param_plots_%s.png", 1:6), png::readPNG)
-#   # gl = lapply(rl, grid::rasterGrob)
-#   # grid_plot = gridExtra::arrangeGrob(grobs=gl, nrow=2, ncol=3)
-#   # 
-#   # ggsave(filename = "./images/param_plots_new.png", plot = grid_plot)
-#   
-#   return(plots)
-# }
-
-
-
+# Generate cowplot grid
 gen_plots_cowplot = function(df_data, val_phi = 0.2, val_GG = -0.3, val_var = 1, n_select = 10) {
   
   plot_gini_phi = plot_gini(select_pregen_inc_data(df_data, val_GG = val_GG, val_var = val_var, n_select = n_select), x_title = "", y_title = "Gini")
@@ -222,16 +179,14 @@ ui <- tagList(
                  conditionalPanel(condition = "'1' == '1'",#"input.distribution == 'Siblings'",
                                   numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
                                   
-                                  h4("Incomes are generated as follows:"),
-                                  
-                                  sliderInput("sib_phi_men", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, men"), min = 0, 
+                                  sliderInput("sib_phi_men", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
                                               max = 1, value = 0.6, step=0.05),
                                   # sliderInput("sib_phi_women", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, women"), min = 0, 
                                   #             max = 1, value = 0.6, step=0.05),
                                   
                                   sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = -100, 
-                                              max = 100, value = 25, step=5),
-                                  sliderInput("sib_var_income_slider", HTML("Variance (men)"), min = 0, 
+                                              max = 100, value = -25, step=5),
+                                  sliderInput("sib_var_income_slider", HTML("Variance"), min = 0, 
                                               max = 5, value = 1, step=0.25),
                                   # sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, 
                                   #             max = 100, value = -25, step=25)
@@ -269,7 +224,7 @@ ui <- tagList(
                  # SIBLINGS
                  
                  conditionalPanel(condition = "'1' == '1'",#"input.distribution == 'Siblings'",
-                                  sliderInput("params_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, men"), min = 0, 
+                                  sliderInput("params_phi", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
                                               max = 1, value = 0.6, step=0.05),
                                   sliderInput("params_GG", HTML("Unfair Inequality: Gender Gap (%)"), min = -1, 
                                               max = 1, value = -0.2, step=0.05),
@@ -285,11 +240,7 @@ ui <- tagList(
                #=========================================================================#
                mainPanel(
                  
-                 #plotOutput(outputId = "param_plots", width="455px", height="500px"),
-                 #imageOutput("params_plot"),
-                 plotOutput("param_plot"),
-                 textOutput("text_test"),
-                 "End"
+                 plotOutput("param_plot", width="600px", height="400px")
                  
                  , width=8)
              )
@@ -622,7 +573,7 @@ server <- function(input, output) {
     
     if (distribution == "Siblings") {
       Gini_Table <- calc_sib_groub_gini(df)
-      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total))
+      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = min(100 * Within_SSS / Total, 100)) %>% select(-c(Total, Within_SSS))
       #print(df)
     }
     
