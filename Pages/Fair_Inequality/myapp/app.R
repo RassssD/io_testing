@@ -179,7 +179,7 @@ ui <- tagList(
                  conditionalPanel(condition = "'1' == '1'",#"input.distribution == 'Siblings'",
                                   numericInput(inputId="sib_n_in_group", label = h4("Number in each group"), value = 500),
                                   
-                                  sliderInput("sib_phi_men", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ"), min = 0, 
+                                  sliderInput("sib_phi_men", HTML("Unfair Inequality: <br/>Family Advantage, φ"), min = 0, 
                                               max = 1, value = 0.6, step=0.05),
                                   # sliderInput("sib_phi_women", HTML("Unfair Inequality: <br/>Family Advantage, 1-φ, women"), min = 0, 
                                   #             max = 1, value = 0.6, step=0.05),
@@ -187,7 +187,7 @@ ui <- tagList(
                                   sliderInput("sib_mean_income_diff_slider", HTML("Unfair Inequality: Gender Gap (%)"), min = -100, 
                                               max = 100, value = -25, step=5),
                                   sliderInput("sib_var_income_slider", HTML("Variance"), min = 0, 
-                                              max = 5, value = 1, step=0.25),
+                                              max = 10, value = 1, step=0.25),
                                   # sliderInput("sib_var_income_diff_slider", HTML("Within-gender Inequality <br/>% Difference in income variance"), min = -100, 
                                   #             max = 100, value = -25, step=25)
                                   
@@ -321,8 +321,8 @@ server <- function(input, output) {
       incomes_woman_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
       
       # Combine the two to get the SSS income
-      incomes_man_sss = sib_phi_men * incomes_man_sss_random + (1-sib_phi_men) * incomes_man
-      incomes_woman_sss = sib_phi_women * incomes_woman_sss_random + (1-sib_phi_women) * incomes_woman
+      incomes_man_sss = sib_phi_men * incomes_man + (1 - sib_phi_men) * incomes_man_sss_random
+      incomes_woman_sss = sib_phi_women * incomes_woman + (1 - sib_phi_women) * incomes_woman_sss_random
       
       
     }
@@ -596,8 +596,12 @@ server <- function(input, output) {
     
     if (distribution == "Siblings") {
       Gini_Table <- calc_sib_groub_gini(df)
-      Gini_Table <- mutate(Gini_Table, "Total Inequality" = Total, "% Fair" = min(100 * Within_SSS / Total, 100)) %>% select(-c(Total, Within_SSS))
-      #print(df)
+      #print(Gini_Table)
+      Gini_Table <- mutate(Gini_Table, 
+                           "Total Inequality" = Total, 
+                           "Fair Inequality" = Within_SSS,
+                           "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total, Within_SSS))
+      #print(Gini_Table)
     }
     
     else {
