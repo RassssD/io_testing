@@ -216,14 +216,15 @@ ui <- tagList(
                  
                  
                  h3("Data Generation"),
-                 helpText('For each gender \\( g \\in \\{M,F\\} \\), and each sibling pair \\( i=1, \\dots, N \\), take two log-normally distributed variables, \\( X_{gi}^{(1)}, X_{gi}^{(2)} \\), with mean \\( \\mu_{g} \\) and variance \\( \\sigma_{g}^{2} \\). For gender \\(g\\), the family advantage is \\(1-\\varphi_{g}.\\)'),
+                 helpText('For each gender \\( g \\in \\{M,F\\} \\), and each sibling pair \\( i=1, \\dots, N \\), take two normally distributed variables, \\( X_{gi}^{(1)}, X_{gi}^{(2)} \\), with mean \\( \\mu_{g} \\) and variance \\( \\sigma_{g}^{2} \\). For gender \\(g\\), the family advantage is \\(1-\\varphi_{g}.\\)'),
                  helpText("Let \\( y_{gi}^{(1)}, y_{gi}^{(2)} \\) denote the log incomes of siblings 1 and 2 of a given pair \\( i \\) and a given gender \\( g \\)."),
-                 helpText('Then \\( y_{gi}^{(1)} = X_{gi}^{(1)} \\) and \\( y_{gi}^{(2)} = \\varphi_{g} \\times X_{gi}^{(2)} + (1 - \\varphi_{g}) \\times X_{gi}^{(1)} \\).
+                 helpText('Then \\( y_{gi}^{(1)} = \\exp(X_{gi}^{(1)}) \\) and \\( y_{gi}^{(2)} = \\varphi_{g} \\times \\exp(X_{gi}^{(1)}) + (1 - \\varphi_{g}) \\times \\exp(X_{gi}^{(2)}) \\).
 '),
                  
                  h3("Gini Calculation"),
-                 helpText('For each group \\( k \\in \\{p,f\\} \\) the Gini coefficient is: \\( G^{k}= \\displaystyle\\frac{\\Delta^{k}}{N^{k}} \\frac{1}{\\underline{y}} \\frac{1}{2} \\).'),
+                 helpText('For each group \\( k \\in \\{1,2\\} \\) the Gini coefficient is: \\( G^{k}= \\displaystyle\\frac{\\Delta^{k}}{N^{k}} \\frac{1}{\\underline{y}} \\frac{1}{2} \\).'),
                  helpText('Where \\( \\Delta^{k} = \\sum_{i=j+1}^{n} \\sum_{j=1}^{n-1} |y_{i}-y_{j}| s_{ij}^{k} \\), such that \\( s_{ij}^{k}=1 \\) iff \\( i \\) and \\( j \\) are in the same group \\( k \\), and 0 otherwise. Also, \\( N^{p} = \\frac{n(n-1)}{2}, N^{f} = \\frac{n}{2} \\).'),
+                 helpText('For \\(G^{f2}\\), incomes are normalised such that every family has an average income of 1.'),
                  helpText('The share of fair inequality is defined as \\( \\cfrac{G^{f}}{G^{p}} \\).'),
                  
                  , width=8)
@@ -299,7 +300,7 @@ server <- function(input, output) {
       
       
       # Obtain parameters
-      sib_RLN_mean_men = 10
+      sib_RLN_mean_men = 1
       sib_RLN_mean_women = sib_RLN_mean_men + input$sib_mean_income_diff_slider * sib_RLN_mean_men / 100
       
       sib_RLN_var_men = input$sib_var_income_slider
@@ -309,16 +310,16 @@ server <- function(input, output) {
       #print(c(n_indivs, sib_phi_men, sib_phi_women, sib_RLN_mean_men, sib_RLN_mean_women, sib_RLN_var_men, sib_RLN_var_women))
           
       # Generate original incomes
-      incomes_man <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
-      incomes_woman <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
+      incomes_man <- pmax(exp(rnorm(n=n_indivs, mean=sib_RLN_mean_men, sd=sib_RLN_var_men)), 0)
+      incomes_woman <- pmax(exp(rnorm(n=n_indivs, mean=sib_RLN_mean_women, sd=sib_RLN_var_women)), 0)
       
       group_woman <- to_vec(for(i in 1:n_indivs) "Woman")
       group_man <- to_vec(for(i in 1:n_indivs) "Man")
       
       
       # Generate random element of the SSS income
-      incomes_man_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_men), sib_RLN_var_men), 0)
-      incomes_woman_sss_random <- pmax(rlnorm(n_indivs, log(sib_RLN_mean_women), sib_RLN_var_women), 0)
+      incomes_man_sss_random <- pmax(exp(rnorm(n=n_indivs, mean=sib_RLN_mean_men, sd=sib_RLN_var_men)), 0)
+      incomes_woman_sss_random <- pmax(exp(rnorm(n=n_indivs, mean=sib_RLN_mean_women, sd=sib_RLN_var_women)), 0)
       
       # Combine the two to get the SSS income
       incomes_man_sss = sib_phi_men * incomes_man + (1 - sib_phi_men) * incomes_man_sss_random
@@ -487,6 +488,23 @@ server <- function(input, output) {
   # Table
   output$GiniTable <- renderTable({
     
+    # Gini Normalisation
+    normalise_inc_fGini2 <- function(dataframe) {
+      m <- 2 # Obtain number of siblings per family
+      #w <- t(replicate(m,colMeans(dataframe))) # Generate coefficients vector
+      
+      mean_inc_ori = dataframe %>% select(Income) %>% colMeans()
+      mean_inc_sss = dataframe %>% select(Income_SSS) %>% colMeans()
+      
+      dataframe_norm = dataframe %>% mutate(Income = Income / mean_inc_ori,
+                                            Income_SSS = Income_SSS / mean_inc_sss)
+      
+      
+      #y <- x/w # Demean population st each family has average income of 1
+      return (dataframe_norm) # Calculate Gini based on new, demeaned population
+    }
+    
+    
     # Calculates gini for the entire population
     calc_total_gini <- function(dataframe){
       # Get incomes
@@ -552,8 +570,8 @@ server <- function(input, output) {
     calc_sib_groub_gini <- function(dataframe) {
       
       # Setup table
-      df_gini <- data.frame(matrix(ncol = 3, nrow = 0))
-      colnames(df_gini) <- c("Group", "Within_SSS", "Total")
+      df_gini <- data.frame(matrix(ncol = 4, nrow = 0))
+      colnames(df_gini) <- c("Group", "Within_SSS_1", "Within_SSS_2", "Total")
       
       # Need long version of data
       dataframe_long <- dataframe %>%
@@ -562,11 +580,12 @@ server <- function(input, output) {
                      values_to = "Income")
       
       # Aggregates are easy
-      all_within_SSS_gini <- calc_sib_gini(dataframe)
+      all_within_SSS_gini_1 = calc_sib_gini(dataframe)
+      all_within_SSS_gini_2 = calc_sib_gini(normalise_inc_fGini2(dataframe))
       all_total_gini <- calc_total_gini(dataframe_long)
       
       # Fill in the All category
-      df_gini[nrow(df_gini) + 1,] = list(Group = "All", Within_SSS = all_within_SSS_gini, Total = all_total_gini)
+      df_gini[nrow(df_gini) + 1,] = list(Group = "All", Within_SSS_1 = all_within_SSS_gini_1, Within_SSS_2 = all_within_SSS_gini_2, Total = all_total_gini)
       
       # Iterate over groups
       for(group in unique(dataframe$Group)){
@@ -575,11 +594,17 @@ server <- function(input, output) {
         df_long_group <- dataframe_long %>% filter(Group == group)
         
         group_gini <- calc_total_gini(df_long_group)
-        group_sib_gini <- calc_sib_gini(df_group)
+        group_sib_gini_1 = calc_sib_gini(df_group)
         
+        
+        # Apply normalisation to calculate G^f2
+        # Normalisation: All pairs have same average income
+        group_sib_gini_2 = calc_sib_gini(normalise_inc_fGini2(df_group))
+        
+        #print(group_sib_gini_2)
         
         # Add to group
-        df_gini[nrow(df_gini) + 1,] = list(Group = group, Within_SSS = group_sib_gini, Total = group_gini)
+        df_gini[nrow(df_gini) + 1,] = list(Group = group, Within_SSS_1 = group_sib_gini_1, Within_SSS_2 = group_sib_gini_2, Total = group_gini)
       }
       
       return(df_gini)
@@ -598,9 +623,11 @@ server <- function(input, output) {
       Gini_Table <- calc_sib_groub_gini(df)
       #print(Gini_Table)
       Gini_Table <- mutate(Gini_Table, 
-                           "Total Inequality" = Total, 
-                           "Fair Inequality" = Within_SSS,
-                           "% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total, Within_SSS))
+                           "G" = Total, 
+                           "G^f1" = Within_SSS_1,
+                           "G^f2" = Within_SSS_2) %>%
+        select(-c(Total, Within_SSS_1, Within_SSS_2))
+                           #"% Fair" = 100 * Within_SSS / Total) %>% select(-c(Total, Within_SSS))
       #print(Gini_Table)
     }
     
